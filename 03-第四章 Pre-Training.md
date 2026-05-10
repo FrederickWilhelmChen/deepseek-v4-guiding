@@ -1,125 +1,379 @@
-## Pre-Training 预训练工程
-### 章节导语
-在引入了新的算法，并进行了针对性的硬件和软件适配之后。终于到了真正进行模型训练的过程。这一章讨论的重点如下：
-1. 模型训练前的数据预处理及数据选择
-1. 模型训练的前中后期节奏
-1. 模型训练过程中的稳定性问题
+# 🌱 第 4 章 Pre-Training：预训练工程
 
-### 1. Data Construction：预训练数据选择和组织
-DeepSeek 在 V3 预训练数据基础上，构造了一个更多样、更高质量、有效上下文更长的数据集，最终V4 flash的数据集规模超过32T token，V4 pro的数据集规模超过33T。重点包括：
-- 过滤批量自动生成和模板化网页内容
-报告原文中提到过滤这两类网页内容主要是为了防止model collapse。也就是在DeepSeek看来，现在市面上由LLM生成的模板化的网页内容已经成为垃圾废料，这部分内容如果不做专项清除，会直接污染训练过程中的模型认知。模型会认为这些就是最好最常见的范本，学到失真的内容分布，直接被带偏到跟随这部分样本，这就是所谓model collapse
-这其实和我们常讲的 Garbage in，Garbage out是一个道理，已经成为模型厂商之间的普遍共识：模型生成的大量模板化的东西会在训练时污染自己，必须花大力气做数据清洗
+> 本章回答的是：在算法结构和 GPU 基础设施准备好之后，DeepSeek V4 如何组织真正的预训练过程。
 
-- 保留数学和编程语料
-DeepSeek对数学语料 / coding 语料 / agentic data / long text（如各类论文和技术报告）更为重视
-这里需要额外说明一点，报告里特别强调对长文档的数据。对长上下文窗口而言，语料的组织有两种：（1）把多段较短的上下文（甚至包括AI辅助生成延长后的文本）做打包拼接作为训练语料；（2）直接用长文本做训练语料。对于训练来说，后者显然是更好的，因为他是一个逻辑通顺的自然长序列组织文档而前者往往欠缺这一点。但高质量的长文档语料是相对匮乏的，所以第一种方法本身也在广泛采用
+---
 
-- Tokenizer和特殊组织的packing
-DeepSeek沿用了V3的tokenizer，仍然保持128k的词表规模。但是加了一些special token，同时继承 token-splitting 和 FIM 策略，并把不同来源的文档 pack 到合适序列里，减少样本截断并提高token利用率
-（1）Token-splitting
-Token-splitting 可以理解为一种 tokenizer 鲁棒性训练。由于 DeepSeek tokenizer 中存在标点+换行一类组合 token来提高压缩效率，但也可能让模型对特定 token 边界产生偏置。因此训练时随机拆分一部分组合 token，让模型适应多种等价切分方式，减少由于换行、标点、代码格式等造成的边界敏感性。
-（2）FIM（Fill in Middle）策略
-这部分其实相当匹配于coding场景。因为在coding场景中大量的情景不是直接在原来的代码尾部做续写，而是在line 和 line之间插入一段新代码。也就是说在训练阶段针对一个固定不动的上文和固定不动的下文，生成中间内容
+## 🧭 本章速览
 
-- Sample-level attention mask
-在训练过程中一方面是为了提高效率，另一方面也是为了组装长上下文供训练，往往会把多段不相关的文本packing之后进行训练。这本身是正常做法
-但对模型来说，他并不知道这多段文本的确是完全没关系，组装起来只是为了工程优化，他可能从这些本来毫不相干的文本知识之间自己学出来一些奇怪的关联性。为了避免这个问题，DS的方案是：
-<text underline="true">*一个 batch sequence 里可以 pack 多个样本，但 attention 上限制不同 sample 之间互相看不到。*</text>
-这里涉及到Transformer在decode阶段的基本原理，传统的decode通俗上说是：预测下一个token时，只能看到前面的token，后面的token通过mask的方式屏蔽起来不让模型看到。DS的做法示意图如下：
-<image token="NjgMb2qeQo9vcex7VnEcNiEun2d" url="https://internal-api-drive-stream.larkoffice.com/space/api/box/stream/download/authcode/?code=NWZjNjk0NDg4NWY3ZTkwODMyOWIyNmMyMWZmNmE2ZGJfMTQ4NjI2ZjNhYjNiYmE5OWM5OTZiZGQ2ZGQ4MTQ0M2RfSUQ6NzYzODMyMTI0Mjg4NTM2MDgyNV8xNzc4NDM2NTQyOjE3Nzg1MjI5NDJfVjM" width="1448" height="1086" align="center"/>
+这一章主要讨论三件事：
 
+| 模块 | 核心问题 | 读者应关注什么 |
+|---|---|---|
+| Data Construction | 用什么数据训练 | 数据清洗、长文档、FIM、sample-level attention mask |
+| Model / Training Setups | 怎么安排训练节奏 | Flash / Pro 差异、序列长度递进、CSA 引入时机 |
+| Training Instability | 训练不稳定怎么办 | Loss spike、Anticipatory Routing、SwiGLU Clamping |
+| Evaluation | 基模效果怎么看 | 不盯分数，重点看不同 benchmark 反映的能力差异 |
 
-### 2. Model Setups：Flash 和 Pro 的规模差异
-DS发布了flash和pro两个版本，两个版本参数如下：
-- Flash
+```mermaid
+flowchart TD
+    A[Pre-Training] --> B[Data Construction]
+    A --> C[Model Setups]
+    A --> D[Training Setups]
+    A --> E[Stability]
+    A --> F[Evaluation]
+
+    B --> B1[清洗自动生成 / 模板化网页]
+    B --> B2[保留数学 / 代码 / agentic / long text]
+    B --> B3[Tokenizer / FIM / Packing]
+    B --> B4[Sample-level Attention Mask]
+
+    C --> C1[Flash]
+    C --> C2[Pro]
+
+    D --> D1[AdamW + Muon]
+    D --> D2[4K -> 16K -> 64K -> 1M]
+    D --> D3[CSA warmup]
+
+    E --> E1[Anticipatory Routing]
+    E --> E2[SwiGLU Clamping]
+```
+
+---
+
+# 1️⃣ Data Construction：预训练数据选择和组织
+
+DeepSeek 在 V3 预训练数据基础上，构造了一个更多样、更高质量、有效上下文更长的数据集。
+
+最终：
+
+- V4 Flash 数据集规模超过 **32T token**。
+- V4 Pro 数据集规模超过 **33T token**。
+
+---
+
+## 🧹 1.1 过滤批量自动生成和模板化网页内容
+
+报告原文提到，过滤这两类网页内容主要是为了防止 **model collapse**。
+
+这里可以通俗理解为：
+
+> 如果训练数据里充满 LLM 自动生成的模板化内容，模型会把这些垃圾样本当成真实世界的常见分布，最后学到失真的语言和知识结构。
+
+这和工程里常说的 **Garbage in, Garbage out** 是一个道理。
+
+当前模型厂商已经普遍意识到：模型生成的大量模板化内容会污染后续训练，必须做专项清洗。
+
+---
+
+## 🧮 1.2 保留数学、编程、Agentic、长文档语料
+
+DeepSeek 更重视这些语料：
+
+- 数学语料；
+- coding 语料；
+- agentic data；
+- long text，例如论文、技术报告等。
+
+这里特别值得注意的是 **长文档数据**。
+
+对长上下文训练而言，语料组织大体有两种方式：
+
+| 方式 | 特点 | 问题 |
+|---|---|---|
+| 多段短文本拼接 | 可以快速构造长序列，提高 token 利用率 | 不同段落语义未必连续 |
+| 原生长文本 | 逻辑自然连续，更适合训练长程依赖 | 高质量长文档语料稀缺 |
+
+所以，从训练质量看，原生长文本当然更好；但从数据规模看，拼接 packing 仍然是广泛采用的工程手段。
+
+---
+
+## 🧩 1.3 Tokenizer、Token-splitting 和 FIM
+
+DeepSeek 沿用了 V3 tokenizer，仍保持 **128K 词表规模**。
+
+同时加入了一些 special token，并继承了：
+
+- token-splitting；
+- FIM；
+- 文档 packing 策略。
+
+### Token-splitting：提高 tokenizer 鲁棒性
+
+Token-splitting 可以理解为一种 tokenizer 鲁棒性训练。
+
+DeepSeek tokenizer 中存在一些“标点 + 换行”一类的组合 token，用来提高压缩效率。但这种组合 token 也可能让模型对特定 token 边界产生偏置。
+
+因此训练时随机拆分一部分组合 token，让模型适应多种等价切分方式，减少换行、标点、代码格式造成的边界敏感性。
+
+### FIM：Fill in Middle
+
+FIM 非常匹配 coding 场景。
+
+因为在真实编码中，很多任务不是在文件尾部续写，而是在已有代码的两行之间插入一段新代码。
+
+也就是说，训练阶段需要让模型学会：
+
+```plaintext
+给定上文 + 给定下文 -> 生成中间内容
+```
+
+这比单纯“从左到右续写”更符合代码编辑任务。
+
+---
+
+## 🎭 1.4 Sample-level Attention Mask
+
+训练过程中，为了提高效率，也为了组装长上下文，常常会把多段不相关文本 packing 到同一个 sequence 里训练。
+
+但对模型来说，它不知道这些文本本来毫无关系。如果不加限制，模型可能从这些无关文本之间学出奇怪关联。
+
+DeepSeek 的方案是：
+
+> **一个 batch sequence 里可以 pack 多个样本，但 attention 上限制不同 sample 之间互相看不到。**
+
+```mermaid
+flowchart LR
+    subgraph Packed Sequence
+        A1[Sample A token 1]
+        A2[Sample A token 2]
+        B1[Sample B token 1]
+        B2[Sample B token 2]
+        C1[Sample C token 1]
+    end
+
+    A1 --> A2
+    B1 --> B2
+    A2 -.不能看.-> B1
+    B2 -.不能看.-> C1
+```
+
+传统 causal mask 解决的是：预测当前位置时不能看未来 token。
+
+Sample-level attention mask 进一步解决的是：
+
+> **不同样本虽然被工程上 pack 到一起，但语义上仍然互相隔离。**
+
+---
+
+# 2️⃣ Model Setups：Flash 和 Pro 的规模差异
+
+DeepSeek V4 发布了 Flash 和 Pro 两个版本。
+
+## ⚡ Flash
+
 ```plaintext
 43 层 Transformer
 总参数 284B，每 token 激活 13B
 CSA top-k = 512
-HCA 压缩率： 128
+HCA 压缩率 = 128
 MoE：1 个 shared expert + 256 个 routed experts
 每 token 激活 6 个 routed experts
-前两层用 dense 的 pure sliding window attention，后续层交替使用 CSA 和 HCA
+前两层用 dense 的 pure sliding window attention
+后续层交替使用 CSA 和 HCA
 ```
 
-- Pro
+## 🧠 Pro
+
 ```plaintext
 61 层 Transformer
-总参数 1.6T， 每 token 激活 49B
+总参数 1.6T，每 token 激活 49B
 CSA top-k = 1024
 HCA 压缩率 = 128
 MoE：1 个 shared expert + 384 个 routed experts
 每 token 激活 6 个 routed experts
-前两层直接用 HCA，后续层交替使用 CSA 和 HCA
+前两层直接用 HCA
+后续层交替使用 CSA 和 HCA
 ```
 
-其中最两个模型对前两层的注意力构造区别是一个值得注意的点，为什么要这么做，本人总结了以下几个可能的原因，需要强调的是<text underline="true">*纯属个人推测，报告中没有直接说明原因*</text>
-1. flash版本更需要低成本省算力，因为滑动窗口不需要做压缩机制，也没有配套压缩机制而来的各种工程处理
-1. HCA如第二章所说，属于建立一个粗粒度的全局背景，DS可能认为在flash中没有必要在低层transformer中就建立这样一套机制，而是应该优先看近处的信息，后续高层transformer再引入长程信息
-1. 滑动窗口中的attention是稠密的，相较于HCA没有复杂的工程处理，对于flash而言有利于增加稳定性
+## 🔍 Flash / Pro 前两层 attention 差异
 
-#### Training Setups 训练节奏
-这部分报告原文放在了4.2节 Model Setups下面，主要阐述了三件事：
-1. 优化器组合
-这部分优化器指的就是第二章提到的AdamW和Muon。报告提到，Flash和Pro采用同样的策略，对大多数参数都使用Muon，而对embedding、prediction head、所有 RMSNorm 权重使用 AdamW
-这里体现了DS工程上的取舍，主要矩阵参数使用Muon来提升收敛和稳定性，但一些敏感参数仍然保留了传统AdamW方案
-1. 递进的序列长度
-Flash和Pro都支持1M context，但在训练上，不是从一开始就直接上1M context，而是一个递进的过程，从 4K -> 16K -> 64K -> 1M
-这也比较容易理解，从0开始的模型训练不可能从一开始就上1M context，就像不可能直接让婴儿读四大名著一样，要有一个先学简单的后学难的这样一个过程
-1. Sparse attention的引入时机
-这部分的描述，可以比较粗略的理解为DS选择在训练的什么阶段真正引入CSA的机制
-Flash 的策略是：在训练的前 1T tokens 中用的是dense attention做warm up。训练序列长度扩大至 64K 时，引入 CSA，并在剩余训练中保持。引入CSA时，还要先短暂 warmup CSA 的 indexer，再进入大部分 sparse attention 训练。
-Pro 与 Flash 类似，但 dense attention 阶段更长
-DS的这部分工程处理意味着两件事：（1）稠密注意力的基座打底过程必不可少，先在较短的文本上把稳定的token表示和分布先学稳定才能后续引入压缩和筛选；（2）indexer的筛选不是一开始就能学会的，他需要从稳定的注意力分布中先学习怎么做选择，如果这一步还没学会，过早上CSA反而会让模型在训练早期就走错路
-### 
-#### Mitigating Training Instability 训练稳定性问题
-DS在报告中提到在训练过程中遇到了 loss spike问题。回滚可以暂时恢复，但不能阻止spike再次发生。
-简单解释下loss spike：
-有过任何机器学习算法训练经验的人都知道，训练的本质就是不断降低模型预测结果与标签本身之间的差异，这个差异通常用loss来衡量。正常且良好的的训练过程loss应当在总体上是逐步下降的，但loss spike是在本来逐步下降的loss里突然出现了显著上扬的loss尖峰，这个尖峰可能后续就自动在训练中消弭，也有可能直接把训练带崩
-<image token="Fes2bVonDorG0NxPwCJcucX0n4e" url="https://internal-api-drive-stream.larkoffice.com/space/api/box/stream/download/authcode/?code=ZWEzMjk0ODQ0NTY3NTQ2ZjlmYjNiOGM1YjRhZDE2MTFfNTg5OTMwYzRjMjU4YmIyMWVhMjI1MmEyZmMwNzkxYTJfSUQ6NzYzODMyMTI0MDA4NzkwNzI5OV8xNzc4NDM2NTQyOjE3Nzg1MjI5NDJfVjM" width="1448" height="1086" align="center"/>
+两个模型在前两层注意力构造上有一个值得注意的区别：
 
-DS从经验角度发现，spike 和 MoE 层里的异常值绑定，而专家路由机制似乎会加剧异常值的出现。于是他们从两个方向处理
-1. Anticipatory Routing
-为什么DS认为MoE的Expert routing会提高异常值出现几率并引发spike，因为专家路由产生了一个环路：
+- Flash 前两层使用 dense pure sliding window attention。
+- Pro 前两层直接使用 HCA。
+
+我对可能原因的推测如下，报告中没有直接说明：
+
+1. Flash 更强调低成本，滑动窗口不需要压缩机制，也不需要配套工程处理。
+2. HCA 更像粗粒度全局背景，DeepSeek 可能认为 Flash 低层没有必要太早建立这套机制。
+3. Sliding window attention 是稠密且相对简单的，对 Flash 的训练稳定性更友好。
+
+---
+
+# 3️⃣ Training Setups：训练节奏
+
+报告原文把这部分放在 4.2 Model Setups 下面，主要讲三件事。
+
+## 🧰 3.1 优化器组合：AdamW + Muon
+
+Flash 和 Pro 采用相同策略：
+
+- 大多数参数使用 **Muon**。
+- embedding、prediction head、所有 RMSNorm 权重使用 **AdamW**。
+
+这体现了一个工程取舍：
+
+> 主要矩阵参数使用 Muon 来提升收敛和稳定性，但敏感参数仍然保留传统 AdamW。
+
+## 📏 3.2 递进的序列长度
+
+Flash 和 Pro 都支持 1M context，但训练不是一开始就直接上 1M。
+
+而是递进式扩展：
+
 ```plaintext
-上一轮中Expert自身由于各种可能的原因出现了短暂的异常，中间层输出了异常值，影响了下一轮训练的模型参数
-->
-router在受影响的模型参数上计算路由结果，在expert选择上也开始变得异常
-->
-router行为改变，开始更加偏向把token送到异常expert上
-->
-闭环发生，整个系统整体开始自强化异常，spike发生
+4K -> 16K -> 64K -> 1M
 ```
 
-DS的解决方案在于打破这个环路，下面是一个简略通俗化的表示：
-```plaintext
-Expert自身由于各种可能的原因出现了短暂的异常，中间层输出了异常值，这一步仍然可能发生
-->
-这一轮token应该路由到哪个expert，不由当前轮的模型参数计算得到，而是由若干轮训练之前的的模型参数得到
-->
-router行为没有直接被这一轮的异常影响
-->
-闭环在这一轮被打断，后续expert自身的短暂异常可能已自恢复，即使没有自恢复，这个spike的进程也会被大大减速
+这很好理解：从零开始训练的模型不可能一开始就读 1M context，就像不可能直接让婴儿读四大名著。
+
+## 🧭 3.3 Sparse Attention 的引入时机
+
+这部分可以理解为：DeepSeek 选择在训练什么阶段真正引入 CSA。
+
+### Flash 的策略
+
+- 前 1T tokens 使用 dense attention warmup。
+- 序列长度扩大至 64K 时引入 CSA。
+- 引入 CSA 时，先短暂 warmup CSA indexer。
+- 然后进入大部分 sparse attention 训练。
+
+### Pro 的策略
+
+Pro 与 Flash 类似，但 dense attention 阶段更长。
+
+## ✅ 训练节奏的意义
+
+这套安排说明两件事：
+
+1. 稠密注意力的基座打底过程必不可少，先在较短文本上学稳定 token 表示和分布，再引入压缩与筛选。
+2. CSA indexer 不是一开始就会选择，它需要先从稳定 attention 分布里学习怎么筛选。过早引入 CSA，可能让模型训练早期就走错路。
+
+---
+
+# 4️⃣ Mitigating Training Instability：训练稳定性问题
+
+DeepSeek 在报告中提到，训练过程中遇到了 **loss spike** 问题。
+
+回滚可以暂时恢复，但不能阻止 spike 再次发生。
+
+## 📈 什么是 loss spike
+
+训练的本质，是不断降低模型预测结果与标签之间的差异，这个差异通常用 loss 衡量。
+
+正常训练中，loss 应该总体下降。
+
+而 **loss spike** 是指：
+
+> 本来逐步下降的 loss 中，突然出现显著上扬的尖峰。
+
+这个尖峰可能后续自动消失，也可能直接把训练带崩。
+
+---
+
+## 🔁 4.1 Anticipatory Routing
+
+DeepSeek 从经验角度发现：spike 和 MoE 层里的异常值绑定，而 expert routing 机制似乎会加剧异常值出现。
+
+异常反馈环路可以简化为：
+
+```mermaid
+flowchart TD
+    A[某个 Expert 出现短暂异常] --> B[中间层输出异常值]
+    B --> C[影响下一轮模型参数]
+    C --> D[Router 基于受影响参数计算路由]
+    D --> E[更多 token 被送到异常 Expert]
+    E --> F[异常被自强化]
+    F --> G[Loss Spike]
 ```
 
-需要强调的是：DS<text underline="true">*不是在所有训练中都做Anticipatory Routing*</text>，而是在loss spike真发生了的时候，先做回滚，然后开启Anticipatory Routing，维持一段时间后，再回到正常训练行为
+DeepSeek 的解决方案是打破这个环路：
 
-1. SwiGLU Clamping
-Anticipatory Routing 放在后端系统里的类比，更像是熔断、回滚、降级、恢复：当系统已经出现 spike 风险时，先切断异常反馈环路，让训练重新稳定下来
-SwiGLU Clamping 的思路则更偏数值稳定性：不是等异常反馈环路形成后再处理，而是在 FFN 的关键中间变量上直接限幅，防止异常激活值被继续放大和扩散。
-解释 SwiGLU 需要引入一些额外概念，这里可以简化理解：
-- SwiGLU是Transformer中常见的门控激活结构，用来决定哪些信息应该被放大、哪些信息应该被抑制
-- SwiGLU 里存在一个乘法门控结构，某个分支如果偶发出现极端大值，和另一个分支相乘后可能进一步放大，形成异常值
-- 既然这些异常值可能污染后续计算，那最简单的思路就是直接做限幅（报告原文中设置阈值是10），超过阈值的值直接截断。这样即使中间变量偶发异常，也会被截断在可控范围内，降低异常值扩散并诱发 loss spike 的概率
+```mermaid
+flowchart TD
+    A[Expert 可能出现短暂异常] --> B[当前轮不直接用当前参数决定路由]
+    B --> C[使用若干轮之前的模型参数计算路由]
+    C --> D[Router 不被当前异常立即污染]
+    D --> E[异常反馈环路被减速或打断]
+    E --> F[训练重新稳定]
+```
 
-DS报告中自己也提到，以上提到的两个方案，不是严谨的数学优化，而是一个经验化的工程方案，事实上他们对原因的归纳本身也是经验式而非有数学推导。当然，这两个工程方案本身被证明是有效的
+需要强调的是：
 
-### 3. Evaluations：base model 基模的benchmark
-本节主要是对预训练得到的基模的评测结果。如导读最一开始，benchmark本身不是本文关心的重点，但报告中提到的一些现象的确非常有趣值得拿出来说
-<image token="GBDDbDeVvowChRxl1RNcvY69nss" url="https://internal-api-drive-stream.larkoffice.com/space/api/box/stream/download/authcode/?code=ZTA0Nzk4NzE0N2MyZjkyM2FkZjc3M2RmN2VlZjc0YjhfNjVmM2U0MGU2Y2FiMzY4OGEwOTczMmYwNDY1ODBhMDFfSUQ6NzYzODMyMTI0MTUzNjUxNTAwMF8xNzc4NDM2NTQyOjE3Nzg1MjI5NDJfVjM" width="1232" height="858" align="center"/>
+> DeepSeek 不是在所有训练中都使用 Anticipatory Routing，而是在 loss spike 发生后，先回滚，再开启 Anticipatory Routing，维持一段时间后，再回到正常训练行为。
 
-对于预训练出来的基模，在coding任务上，V4的两个版本和V3.2比性能有参差，并不是一边倒。在BigCodeBench上，V3.2的基模比V4 flash和V4 pro都要强，而在Human Eval上，V4两个版本相较于V3.2都有很大优势。需要解释的是BigCodeBench和Human Eval分别是什么。
-- Human Evel更像传统代码生成能力测试：给一个函数签名/说明，让模型补一个通常比较短、相对自包含的 Python 函数。它更考验基础算法、局部代码生成、语法正确性和简单逻辑，通常被视为为短函数级代码生成评测，类似于代码补全任务
-- BigCodeBench则更接近现实开发中的小任务：它要求模型理解更复杂的指令，并组合使用大量 Python 库和函数调用，重点挑战模型使用 diverse function calls 和复杂指令的能力。
-当然，这里的分数仅仅是基模上的评分，真正开放出来的模型能力都是需要经过大量的后训练
+---
+
+## ✂️ 4.2 SwiGLU Clamping
+
+如果把 Anticipatory Routing 类比成后端系统里的熔断、回滚、降级、恢复，那么 SwiGLU Clamping 更像是数值稳定性的提前限流。
+
+它的思路不是等异常反馈环路形成后再处理，而是在 FFN 的关键中间变量上直接限幅，防止异常激活值继续放大和扩散。
+
+### SwiGLU 是什么
+
+可以简化理解为：
+
+- SwiGLU 是 Transformer 中常见的门控激活结构。
+- 它用来决定哪些信息应该被放大、哪些信息应该被抑制。
+- SwiGLU 里存在一个乘法门控结构。
+- 某个分支如果偶发出现极端大值，和另一个分支相乘后可能进一步放大，形成异常值。
+
+### Clamping 的作用
+
+既然这些异常值可能污染后续计算，那直接限幅是一个非常工程化的处理方式。
+
+报告原文中设置阈值为 **10**：超过阈值的值直接截断。
+
+这样即使中间变量偶发异常，也会被截断在可控范围内，降低异常值扩散并诱发 loss spike 的概率。
+
+## ⚠️ 对这两个方案的读法
+
+DeepSeek 报告中也提到，这两个方案不是严谨的数学优化，而是经验化工程方案。
+
+也就是说：
+
+- 原因归纳是经验式的；
+- 不是完整数学推导；
+- 但工程上被证明有效。
+
+---
+
+# 5️⃣ Evaluations：Base Model Benchmark
+
+本节主要是对预训练基模的评测结果。
+
+如导读最开始所说，benchmark 本身不是本文关心的重点，但报告中有一些现象值得拿出来说。
+
+## 🧪 Coding 评测中的有趣现象
+
+对于预训练基模，在 coding 任务上，V4 两个版本和 V3.2 相比并不是一边倒。
+
+报告中提到：
+
+- BigCodeBench 上，V3.2 Base 比 V4 Flash 和 V4 Pro 都更强。
+- HumanEval 上，V4 两个版本相较 V3.2 都有明显优势。
+
+这说明不同 coding benchmark 测的不是同一种能力。
+
+## 🧩 HumanEval vs BigCodeBench
+
+| Benchmark | 更像什么 | 主要考察 |
+|---|---|---|
+| HumanEval | 短函数级代码生成 / 补全 | 基础算法、局部代码生成、语法正确性、简单逻辑 |
+| BigCodeBench | 更接近现实开发中的小任务 | 复杂指令理解、Python 库组合、diverse function calls |
+
+HumanEval 更像传统代码生成能力测试：给一个函数签名或说明，让模型补一个较短、相对自包含的 Python 函数。
+
+BigCodeBench 更接近现实开发中的小任务：要求模型理解复杂指令，并组合使用大量 Python 库和函数调用。
+
+## ✅ 小结
+
+这里的分数只是基模评分。
+
+真正开放出来的模型能力，还需要经过大量后训练。
+
+因此这一节更适合拿来观察：
+
+> **不同 benchmark 到底在测什么能力，而不是简单得出“谁更强”的结论。**
