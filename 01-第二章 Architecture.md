@@ -82,6 +82,10 @@ flowchart TD
     D1 --> D2[保留全局背景感]
 ```
 
+### 🖼️ 原始画板
+
+<whiteboard token="R6eiwKiXbhEcVobuV2DcZcydnOb" align="left"/>
+
 ## 🔧 轻技术解释
 
 ### Sliding Window：最近上下文保真
@@ -132,6 +136,10 @@ flowchart TD
 | 原始残差连接 | 单行道 | 所有车只能从一条道上过，稳定但路径单一 |
 | HC | 没有红绿灯的双向八车道 | 通行能力大幅增强，但车流可能混乱 |
 | mHC | 有红绿灯、交警、车道标志的双向八车道 | 保留多通路能力，同时控制车流稳定性 |
+
+### 🖼️ 原始配图
+
+<image token="M4Efb0Ii1o9JdYxhHJJcijmAnef" url="https://api3-eeft-drive.larkenterprise.com/space/api/box/stream/download/authcode/?code=Yjk4YTFmZDhjYmQzNzkwNDY2MGVhNmRiOWJmZWQ1YTdfODE0NDgxM2NjZjZkZjk5NGExZDZhNThkOTVhYjg2MzRfSUQ6NzYzNzU1NTQ5NDU5NjUxMjk1OV8xNzc4NDM2NTM0OjE3Nzg1MjI5MzRfVjM" width="1672" height="941" align="center"/>
 
 ```mermaid
 flowchart LR
@@ -233,6 +241,10 @@ Muon 的主要作用：
 1. 避免一次矩阵更新过度集中在少数主方向。
 2. 让更新步长更可控。
 3. 相信方向结构，但不完全相信幅度比例。
+
+### 🖼️ 原始配图
+
+<image token="XWj2ba6Q3oDziSxTBlPcXpAVnNb" url="https://api3-eeft-drive.larkenterprise.com/space/api/box/stream/download/authcode/?code=NDFhNDY3MGY4NWE3ZWIyZjFjZmM2ODlkNGE2MzU5N2NfM2VlMzBlNGJiMGJiYTBkZjc1OWZlMzgwZDZhZGVlMjNfSUQ6NzYzNzU1NTQ5MzU5NDEwNjgyOV8xNzc4NDM2NTM0OjE3Nzg1MjI5MzRfVjM" width="1672" height="941" align="center"/>
 
 ```mermaid
 flowchart LR
