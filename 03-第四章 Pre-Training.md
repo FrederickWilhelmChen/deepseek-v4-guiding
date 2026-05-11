@@ -150,7 +150,7 @@ flowchart LR
 
 ### 🖼️ 原始配图
 
-<image token="NjgMb2qeQo9vcex7VnEcNiEun2d" url="https://internal-api-drive-stream.larkoffice.com/space/api/box/stream/download/authcode/?code=NWZjNjk0NDg4NWY3ZTkwODMyOWIyNmMyMWZmNmE2ZGJfMTQ4NjI2ZjNhYjNiYmE5OWM5OTZiZGQ2ZGQ4MTQ0M2RfSUQ6NzYzODMyMTI0Mjg4NTM2MDgyNV8xNzc4NDM2NTQyOjE3Nzg1MjI5NDJfVjM" width="1448" height="1086" align="center"/>
+![Sample-level Attention Mask](./assets/image/Sample-level%20Attention%20Mask.png)
 
 传统 causal mask 解决的是：预测当前位置时不能看未来 token。
 
@@ -276,7 +276,7 @@ DeepSeek 在报告中提到，训练过程中遇到了 **loss spike** 问题。
 
 ### 🖼️ 原始配图
 
-<image token="Fes2bVonDorG0NxPwCJcucX0n4e" url="https://internal-api-drive-stream.larkoffice.com/space/api/box/stream/download/authcode/?code=ZWEzMjk0ODQ0NTY3NTQ2ZjlmYjNiOGM1YjRhZDE2MTFfNTg5OTMwYzRjMjU4YmIyMWVhMjI1MmEyZmMwNzkxYTJfSUQ6NzYzODMyMTI0MDA4NzkwNzI5OV8xNzc4NDM2NTQyOjE3Nzg1MjI5NDJfVjM" width="1448" height="1086" align="center"/>
+![Loss spike](./assets/image/loss%20spike.png)
 
 ---
 
@@ -356,7 +356,7 @@ DeepSeek 报告中也提到，这两个方案不是严谨的数学优化，而�
 
 ### 🖼️ 原始配图
 
-<image token="GBDDbDeVvowChRxl1RNcvY69nss" url="https://internal-api-drive-stream.larkoffice.com/space/api/box/stream/download/authcode/?code=ZTA0Nzk4NzE0N2MyZjkyM2FkZjc3M2RmN2VlZjc0YjhfNjVmM2U0MGU2Y2FiMzY4OGEwOTczMmYwNDY1ODBhMDFfSUQ6NzYzODMyMTI0MTUzNjUxNTAwMF8xNzc4NDM2NTQyOjE3Nzg1MjI5NDJfVjM" width="1232" height="858" align="center"/>
+![DeepSeek V4 benchmark](./assets/image/deepseek%20v4%20benchmark.png)
 
 ## 🧪 Coding 评测中的有趣现象
 
