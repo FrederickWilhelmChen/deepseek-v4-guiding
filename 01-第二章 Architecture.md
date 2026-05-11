@@ -82,9 +82,9 @@ flowchart TD
     D1 --> D2[保留全局背景感]
 ```
 
-### 🖼️ 原始画板
+### 🖼️ 原始配图
 
-<whiteboard token="R6eiwKiXbhEcVobuV2DcZcydnOb" align="left"/>
+![CSA / HCA 示意图](./assets/image/CSA_HCA示意图.png)
 
 ## 🔧 轻技术解释
 
@@ -139,7 +139,7 @@ flowchart TD
 
 ### 🖼️ 原始配图
 
-<image token="M4Efb0Ii1o9JdYxhHJJcijmAnef" url="https://api3-eeft-drive.larkenterprise.com/space/api/box/stream/download/authcode/?code=Yjk4YTFmZDhjYmQzNzkwNDY2MGVhNmRiOWJmZWQ1YTdfODE0NDgxM2NjZjZkZjk5NGExZDZhNThkOTVhYjg2MzRfSUQ6NzYzNzU1NTQ5NDU5NjUxMjk1OV8xNzc4NDM2NTM0OjE3Nzg1MjI5MzRfVjM" width="1672" height="941" align="center"/>
+![HC vs mHC](./assets/image/HC%20vs%20mHC.PNG)
 
 ```mermaid
 flowchart LR
@@ -244,7 +244,7 @@ Muon 的主要作用：
 
 ### 🖼️ 原始配图
 
-<image token="XWj2ba6Q3oDziSxTBlPcXpAVnNb" url="https://api3-eeft-drive.larkenterprise.com/space/api/box/stream/download/authcode/?code=NDFhNDY3MGY4NWE3ZWIyZjFjZmM2ODlkNGE2MzU5N2NfM2VlMzBlNGJiMGJiYTBkZjc1OWZlMzgwZDZhZGVlMjNfSUQ6NzYzNzU1NTQ5MzU5NDEwNjgyOV8xNzc4NDM2NTM0OjE3Nzg1MjI5MzRfVjM" width="1672" height="941" align="center"/>
+![AdamW vs Muon](./assets/image/AdamW%20vs%20Muon.png)
 
 ```mermaid
 flowchart LR
