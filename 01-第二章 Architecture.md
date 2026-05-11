@@ -65,25 +65,6 @@ DeepSeek V4 做的，就是把这种人类阅读方式做进模型内部。
 
 ## 🗺️ 结构图
 
-```mermaid
-flowchart TD
-    A[完整历史上下文] --> B[最近窗口 Sliding Window]
-    A --> C[中远程历史 CSA]
-    A --> D[远程历史 HCA]
-
-    B --> B1[不压缩]
-    B1 --> B2[保留工作记忆]
-
-    C --> C1[压成中等粒度块]
-    C1 --> C2[Indexer 选择相关块]
-    C2 --> C3[选择性拉回参与 Attention]
-
-    D --> D1[高比例压缩]
-    D1 --> D2[保留全局背景感]
-```
-
-### 🖼️ 原始配图
-
 ![CSA / HCA 示意图](./assets/image/CSA_HCA示意图.png)
 
 ## 🔧 轻技术解释
