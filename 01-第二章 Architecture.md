@@ -165,7 +165,7 @@ flowchart LR
 
 传统残差连接可以写成：
 
-```json
+```plaintext
 y = x + F(x)
 这一层输出 = 原输入 + 这一层学到的修正量
 新的 token 表示 = 原来的 token 表示 + Attention/MLP 计算出来的增量
