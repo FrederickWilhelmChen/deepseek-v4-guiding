@@ -148,6 +148,10 @@ flowchart LR
     B2 -.不能看.-> C1
 ```
 
+### 🖼️ 原始配图
+
+<image token="NjgMb2qeQo9vcex7VnEcNiEun2d" url="https://internal-api-drive-stream.larkoffice.com/space/api/box/stream/download/authcode/?code=NWZjNjk0NDg4NWY3ZTkwODMyOWIyNmMyMWZmNmE2ZGJfMTQ4NjI2ZjNhYjNiYmE5OWM5OTZiZGQ2ZGQ4MTQ0M2RfSUQ6NzYzODMyMTI0Mjg4NTM2MDgyNV8xNzc4NDM2NTQyOjE3Nzg1MjI5NDJfVjM" width="1448" height="1086" align="center"/>
+
 传统 causal mask 解决的是：预测当前位置时不能看未来 token。
 
 Sample-level attention mask 进一步解决的是：
@@ -270,6 +274,10 @@ DeepSeek 在报告中提到，训练过程中遇到了 **loss spike** 问题。
 
 这个尖峰可能后续自动消失，也可能直接把训练带崩。
 
+### 🖼️ 原始配图
+
+<image token="Fes2bVonDorG0NxPwCJcucX0n4e" url="https://internal-api-drive-stream.larkoffice.com/space/api/box/stream/download/authcode/?code=ZWEzMjk0ODQ0NTY3NTQ2ZjlmYjNiOGM1YjRhZDE2MTFfNTg5OTMwYzRjMjU4YmIyMWVhMjI1MmEyZmMwNzkxYTJfSUQ6NzYzODMyMTI0MDA4NzkwNzI5OV8xNzc4NDM2NTQyOjE3Nzg1MjI5NDJfVjM" width="1448" height="1086" align="center"/>
+
 ---
 
 ## 🔁 4.1 Anticipatory Routing
@@ -345,6 +353,10 @@ DeepSeek 报告中也提到，这两个方案不是严谨的数学优化，而�
 本节主要是对预训练基模的评测结果。
 
 如导读最开始所说，benchmark 本身不是本文关心的重点，但报告中有一些现象值得拿出来说。
+
+### 🖼️ 原始配图
+
+<image token="GBDDbDeVvowChRxl1RNcvY69nss" url="https://internal-api-drive-stream.larkoffice.com/space/api/box/stream/download/authcode/?code=ZTA0Nzk4NzE0N2MyZjkyM2FkZjc3M2RmN2VlZjc0YjhfNjVmM2U0MGU2Y2FiMzY4OGEwOTczMmYwNDY1ODBhMDFfSUQ6NzYzODMyMTI0MTUzNjUxNTAwMF8xNzc4NDM2NTQyOjE3Nzg1MjI5NDJfVjM" width="1232" height="858" align="center"/>
 
 ## 🧪 Coding 评测中的有趣现象
 
