@@ -65,7 +65,22 @@ DeepSeek V4 做的，就是把这种人类阅读方式做进模型内部。
 
 ## 🗺️ 结构图
 
-![CSA / HCA 示意图](./assets/image/CSA_HCA示意图.png)
+```mermaid
+flowchart LR
+    Input[长上下文输入] --> SW[Sliding Window\n最近上下文\n不压缩]
+    Input --> CSA[CSA\n中等比例压缩]
+    Input --> HCA[HCA\n高比例全局压缩]
+
+    SW --> NearUse[最近内容直接参与 attention]
+    CSA --> Indexer[按块压缩并建立索引]
+    Indexer --> Select[选择最相关的历史块]
+    Select --> Return[被选中的历史块回流参与 attention]
+    HCA --> GlobalSense[保留远处还有什么的全局感觉]
+
+    NearUse --> Final[最终混合注意力]
+    Return --> Final
+    GlobalSense --> Final
+```
 
 ## 🔧 轻技术解释
 

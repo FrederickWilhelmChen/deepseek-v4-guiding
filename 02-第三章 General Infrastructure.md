@@ -113,7 +113,18 @@ print(b)
 
 这些技术本身都是合理的，但一旦 partial results 的合并顺序依赖 batch 组织、SM 调度或线程先后顺序，浮点非结合律就会把这些底层差异一点点放大。
 
-![浮点数差异放大链路](./assets/image/%E6%B5%AE%E7%82%B9%E6%95%B0%E5%B7%AE%E5%BC%82%E6%94%BE%E5%A4%A7%E9%93%BE%E8%B7%AF.png)
+```mermaid
+flowchart TD
+    A[浮点数非结合律\n同一批数换个合并顺序\n结果就可能不同] --> B[底层 partial result\n合并顺序变化]
+    B --> C[Attention / Reduction / AtomicAdd\n结果出现微小差异]
+    C --> D[MoE 路由评分变化]
+    C --> E[采样结果变化]
+    D --> F[专家路径变化]
+    E --> G[后续 token 轨迹变化]
+    F --> H[整条推理 / 训练路径分叉]
+    G --> H
+    H --> I[问题难复现\n调试和优化困难]
+```
 
 在 Dense 模型里，很多时候它只是小扰动；但在 MoE 模型里，这个问题就会变得更严重。
 
@@ -193,7 +204,20 @@ Deterministic 对 debug 硬件或软件问题意义极大；当训练出现 loss
 
 DeepSeek V4 的思路是反过来：既然低精度是必然的，而且V4后续在全国大范围私有化部署低精度版本是可以预期到的。既然如此，那就让模型提前适应它，在后训练阶段就开始引入低精度，而不是训练完了再压缩。
 #### 精度流转图
-![精度流转链路](./assets/image/%E7%B2%BE%E5%BA%A6%E6%B5%81%E8%BD%AC%E9%93%BE%E8%B7%AF.png)
+```mermaid
+flowchart LR
+    FP32[FP32 master weights\n高精度主版本权重] --> Quant[量化 / 解码]
+    Quant --> FP4[FP4\nMoE expert weights\nCSA indexer / qk path]
+    Quant --> FP8[FP8\n训练计算主承载]
+    FP4 --> Forward[前向计算 / 部署 / 采样]
+    FP8 --> Forward
+    Forward --> Grad[反向传播梯度]
+    Grad --> STE[STE 近似直通]
+    STE --> FP32
+    FP4 --> Online[线上部署一致]
+    FP8 --> Train[复用已有 FP8 training framework]
+    FP32 --> Stable[长期参数更新与优化器状态维护]
+```
 
 V4不是全部参数都做FP4量化，只在下面两个参数上使用FP4
 
