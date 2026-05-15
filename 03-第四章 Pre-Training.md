@@ -132,23 +132,6 @@ DeepSeek 的方案是：
 
 > **一个 batch sequence 里可以 pack 多个样本，但 attention 上限制不同 sample 之间互相看不到。**
 
-```mermaid
-flowchart LR
-    subgraph Packed Sequence
-        A1[Sample A token 1]
-        A2[Sample A token 2]
-        B1[Sample B token 1]
-        B2[Sample B token 2]
-        C1[Sample C token 1]
-    end
-
-    A1 --> A2
-    B1 --> B2
-    A2 -.不能看.-> B1
-    B2 -.不能看.-> C1
-```
-
-### 🖼️ 原始配图
 
 ![Sample-level Attention Mask](./assets/image/Sample-level%20Attention%20Mask.png)
 
@@ -200,7 +183,7 @@ MoE：1 个 shared expert + 384 个 routed experts
 我对可能原因的推测如下，报告中没有直接说明：
 
 1. Flash 更强调低成本，滑动窗口不需要压缩机制，也不需要配套工程处理。
-2. HCA 更像粗粒度全局背景，DeepSeek 可能认为 Flash 低层没有必要太早建立这套机制。
+2. HCA 更像粗粒度全局背景，DeepSeek 可能认为对 Flash 而言，近处的稠密注意力更重要，低层没有必要太早建立全局注意力的机制。这里可能是DS对Flash和Pro的定位不同而做的工程处理，Flash更倾向于优先理解近处上下文，而Pro更倾向于从一开始就建立全局感觉。
 3. Sliding window attention 是稠密且相对简单的，对 Flash 的训练稳定性更友好。
 
 ---
@@ -249,8 +232,6 @@ Pro 与 Flash 类似，但 dense attention 阶段更长。
 
 ## ✅ 训练节奏的意义
 
-这套安排说明两件事：
-
 1. 稠密注意力的基座打底过程必不可少，先在较短文本上学稳定 token 表示和分布，再引入压缩与筛选。
 2. CSA indexer 不是一开始就会选择，它需要先从稳定 attention 分布里学习怎么筛选。过早引入 CSA，可能让模型训练早期就走错路。
 
@@ -258,9 +239,7 @@ Pro 与 Flash 类似，但 dense attention 阶段更长。
 
 # 4️⃣ Mitigating Training Instability：训练稳定性问题
 
-DeepSeek 在报告中提到，训练过程中遇到了 **loss spike** 问题。
-
-回滚可以暂时恢复，但不能阻止 spike 再次发生。
+DeepSeek 在报告中提到，训练过程中遇到了 **loss spike** 问题。 回滚可以暂时恢复，但不能阻止 spike 再次发生。
 
 ## 📈 什么是 loss spike
 
@@ -273,8 +252,6 @@ DeepSeek 在报告中提到，训练过程中遇到了 **loss spike** 问题。
 > 本来逐步下降的 loss 中，突然出现显著上扬的尖峰。
 
 这个尖峰可能后续自动消失，也可能直接把训练带崩。
-
-### 🖼️ 原始配图
 
 ![Loss spike](./assets/image/loss%20spike.png)
 
@@ -338,7 +315,7 @@ flowchart TD
 
 ## ⚠️ 对这两个方案的读法
 
-DeepSeek 报告中也提到，这两个方案不是严谨的数学优化，而是经验化工程方案。
+报告中也提到，这两个方案不是严谨的数学优化，而是经验化工程方案。
 
 也就是说：
 
@@ -353,8 +330,6 @@ DeepSeek 报告中也提到，这两个方案不是严谨的数学优化，而�
 本节主要是对预训练基模的评测结果。
 
 如导读最开始所说，benchmark 本身不是本文关心的重点，但报告中有一些现象值得拿出来说。
-
-### 🖼️ 原始配图
 
 ![DeepSeek V4 benchmark](./assets/image/deepseek%20v4%20benchmark.png)
 
@@ -380,12 +355,4 @@ HumanEval 更像传统代码生成能力测试：给一个函数签名或说明�
 
 BigCodeBench 更接近现实开发中的小任务：要求模型理解复杂指令，并组合使用大量 Python 库和函数调用。
 
-## ✅ 小结
-
-这里的分数只是基模评分。
-
-真正开放出来的模型能力，还需要经过大量后训练。
-
-因此这一节更适合拿来观察：
-
-> **不同 benchmark 到底在测什么能力，而不是简单得出“谁更强”的结论。**
+需要说明的是，这里的分数只是基模评分。 真正开放出来的模型能力，还需要经过大量后训练。
