@@ -12,6 +12,8 @@
 
 我建议把第五章按三条线来读：
 
+![第 5 章 Post-Training 总览](../assets/image/post-training-overview.svg)
+
 | 主线 | 对应内容 | 解决的问题 |
 |---|---|---|
 | Agent 行为协议线 | Reasoning Effort、Tool Call Schema、Interleaved Thinking、Quick Instruction | 模型如何以更稳定的方式参与 Agent runtime |
@@ -21,28 +23,6 @@
 换句话说，第五章不是在单纯讲“RL 策略变了”，而是在讲：
 
 > DeepSeek V4 如何把后训练从一次单一优化过程，升级成 **模型行为协议训练 + 专家能力整合 + 运行时基础设施托底** 的完整系统。
-
-```mermaid
-flowchart TD
-    A[Post-Training] --> B[Agent 行为协议线]
-    A --> C[能力整合线]
-    A --> D[后训练基础设施线]
-
-    B --> B1[Reasoning Effort]
-    B --> B2[Tool Call Schema]
-    B --> B3[Interleaved Thinking]
-    B --> B4[Quick Instruction]
-
-    C --> C1[Specialist Training]
-    C --> C2[OPD]
-    C --> C3[GRM]
-
-    D --> D1[FP4 Rollout]
-    D --> D2[Teacher Scheduling]
-    D --> D3[WAL / KV Resume]
-    D --> D4[Million-Token RL]
-    D --> D5[Sandbox]
-```
 
 ---
 
