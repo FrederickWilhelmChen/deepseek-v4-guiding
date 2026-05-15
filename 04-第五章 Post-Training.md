@@ -1,8 +1,8 @@
-# 第 5 章：Post-Training 后训练，Agent 行为对齐和 RL 范式转变
+# 🧪 第 5 章：Post-Training 后训练，Agent 行为对齐和 RL 范式转变
 
 ---
 
-## 章节导读
+## 🧭 章节导读
 
 本章前两节聚焦于 V4 的后训练工程。5.1 和 5.2 的逻辑关系类似于第二章和第三章之间的关系，都是先讲技术路径，再讲工程实操。后两节 5.3 和 5.4 的内容主要在做 benchmark 评测，本身不是我们关注的重点。
 
@@ -10,7 +10,7 @@
 
 ![第 5 章 Post-Training 总览](./assets/image/post-training-overview.svg)
 
-### 本章阅读结构
+### 📚 本章阅读结构
 
 | 部分 | 内容 | 说明 |
 |---|---|---|
@@ -23,7 +23,7 @@
 
 ---
 
-# 5.1 Post-Training Pipeline：后训练范式的变化
+# 🧬 5.1 Post-Training Pipeline：后训练范式的变化
 
 报告这一节中的逻辑组织有些分散，可以大致划分为两个部分：
 
@@ -34,15 +34,15 @@
 
 ---
 
-## 5.1.1 面向 Agent 推理、工具使用和代码任务的行为对齐
+## 🤖 5.1.1 面向 Agent 推理、工具使用和代码任务的行为对齐
 
 这一部分相对庞杂，报告中提到了多个点，而这些均可以为 Agent 工程提供启发。
 
 ---
 
-## Reasoning Effort：推理强度
+## 🧠 Reasoning Effort：推理强度
 
-### 报告做法
+### 📌 报告做法
 
 ![Reasoning Effort 推理强度](./assets/image/dsv4-reasoning.PNG)
 
@@ -68,7 +68,7 @@ Explicitly write out your entire deliberation process, documenting every interme
 明确写出你整个审议过程，记录每一个中间步骤、考虑过的替代方案和被否定的假设，以确保没有任何假设被放过
 ```
 
-### 一些思考
+### 💡 一些思考
 
 这一做法其实已经和 Claude / GPT 系列模型相仿，都是提供不同档位的推理强度，用推理预算来换取思维强度并提高复杂任务实现能力。
 
@@ -78,9 +78,9 @@ GPT 系列模型的推理内容通常是内化的，也就是说 Chain of Though
 
 ---
 
-## Tool Call Schema and Special Token：工具调用格式
+## 🛠️ Tool Call Schema and Special Token：工具调用格式
 
-### 报告做法
+### 📌 报告做法
 
 V4 中，DS 引入了一种新的工具调用模式，该模式使用特殊的 `|DSML|` 标记，并采用基于 XML 的格式进行工具调用。
 
@@ -88,7 +88,7 @@ V4 中，DS 引入了一种新的工具调用模式，该模式使用特殊的 `
 
 ![Tool Call Schema and Special Token](./assets/image/dsv4-toolcal-schema.PNG)
 
-### 工程理解与一些思考
+### 🔍 工程理解与一些思考
 
 这一点与 Claude Code 官方推荐的 prompt 撰写方式有相似之处。Anthropic 的官方文档中长期推荐使用 XML 格式组织提示词，以获得更好的指令跟随能力。很多好用的 agent prompt 也会使用类似 `<hard-gate></hard-gate>` 的结构来提高约束稳定性。
 
@@ -100,9 +100,9 @@ V4 中，DS 引入了一种新的工具调用模式，该模式使用特殊的 `
 
 ---
 
-## Interleaved Thinking：交错推理模式
+## 🔁 Interleaved Thinking：交错推理模式
 
-### 报告做法
+### 📌 报告做法
 
 这一部分在我看来是最值得 Agent 开发工程师看的一小节。下面直接给出翻译后的报告原文：
 
@@ -118,7 +118,7 @@ DeepSeek-V3.2 引入了一种上下文管理策略，该策略在工具结果回
 
 ![Interleaved Thinking](./assets/image/dsv4-interleaved-thinking.png)
 
-### 工程理解
+### 🔧 工程理解
 
 这一部分最有价值的点在于：**reasoning content 已经不再仅仅是模型自己的思考，而是已经被整合进 tool call 这个行为本身之中。**
 
@@ -126,7 +126,7 @@ DeepSeek V4 API 文档中明确提到：如果 thinking mode 下发生了 tool c
 
 事实上这也不是 DeepSeek 的专利。Kimi 和 Qwen 也有类似的 reasoning state 回传要求。现在很多开箱即用的 Agent 框架，例如 dify / LangChain / DeepAgents / CrewAI，往往都需要通过 provider / proxy 层面的特殊处理，才能兼容这类强依赖 `reasoning_content` 回传的模型。
 
-### 一些思考
+### 💡 一些思考
 
 即使通过 proxy、LiteLLM provider 或 CustomLLM，可以在请求层补齐 `reasoning_content` 回传，也不等于 Agent 框架原生支持 thinking model。
 
@@ -136,9 +136,9 @@ DeepSeek V4 API 文档中明确提到：如果 thinking mode 下发生了 tool c
 
 ---
 
-## Quick Instruction：快速指令
+## ⚡ Quick Instruction：快速指令
 
-### 报告做法
+### 📌 报告做法
 
 下面直接给出翻译后的报告原文：
 
@@ -156,13 +156,13 @@ DS 支持的快速指令标记如图所示：
 
 ![Quick Instruction](./assets/image/dsv4-quick-instruction.png)
 
-### 工程理解
+### 🔧 工程理解
 
 Quick Instruction 的核心不是“多几个特殊 token”，而是：**把一些高频、短输出、强依赖当前上下文的前置判断，放回主模型共享上下文里完成。**
 
 这和很多 Agent 工程里的常见做法相反。很多系统会把意图识别、是否搜索、query rewrite、权限判断、领域分类等前置任务拆给独立小模型或子 Agent。但这种做法有一个明显问题：这些任务往往高度依赖当前上下文，如果拆出去，就需要重新 prefill 一遍上下文。
 
-### 一些思考
+### 💡 一些思考
 
 这对 Agent 开发最大的启发是：
 
@@ -172,7 +172,7 @@ Quick Instruction 的核心不是“多几个特殊 token”，而是：**把一
 
 ---
 
-## 5.1.2 后训练过程中 RL 范式转变
+## 🎯 5.1.2 后训练过程中 RL 范式转变
 
 **前置知识：RL 基础概念，PPO / GRPO 基本思想。**
 
@@ -199,9 +199,9 @@ Quick Instruction 的核心不是“多几个特殊 token”，而是：**把一
 
 ---
 
-## OPD：On-Policy Distillation
+## 🧑‍🏫 OPD：On-Policy Distillation
 
-### 报告做法
+### 📌 报告做法
 
 相比把多个领域、多种奖励信号混在同一个 RL 阶段里联合优化，DS 采用 OPD。
 
@@ -213,7 +213,7 @@ Quick Instruction 的核心不是“多几个特殊 token”，而是：**把一
 
 ![OPD vs Mixed RL](./assets/image/opd-vs-mixed-rl.png)
 
-### 工程理解
+### 🔧 工程理解
 
 OPD 的关键不是普通意义上的“把大模型蒸馏成小模型”，而是：**把多个专家策略的能力，重新压回一个统一的通用模型里。**
 
@@ -223,9 +223,9 @@ OPD 更像是先让不同 expert 在各自赛道里变强，再让统一模型�
 
 ---
 
-## GRM：Generative Reward Model
+## 🧪 GRM：Generative Reward Model
 
-### 报告做法
+### 📌 报告做法
 
 GRM 专门应用于 hard-to-verify 任务。原先这些难以直接评价的任务，常使用 RLHF 策略，依赖大量人工标注数据。
 
@@ -235,7 +235,7 @@ DS 在后训练阶段摒弃了这一做法，设计了基于评分标准的 RL �
 
 ![GRM vs RLHF](./assets/image/grm-vs-rlhf.png)
 
-### 日常开发场景类比
+### 🧑‍💻 日常开发场景类比
 
 > 我们用一个平时非常常见的 code review 场景来类比一下 GRM 和 RLHF 的区别：
 
@@ -270,7 +270,7 @@ GRM 则是一个自己会给自己写评语的评审：
   整体可执行性不足，对复杂生产场景适配不足，还存在 NPE 风险，不能及格，给 0.55。
 ```
 
-### 一些思考
+### 💡 一些思考
 
 GRM 的思路天生带有自增强效果。如果早期自评审过程没有做好，可能带来的不是进化，而是自坍缩。
 
@@ -278,15 +278,15 @@ GRM 的思路天生带有自增强效果。如果早期自评审过程没有做�
 
 ---
 
-# 5.2 RL and OPD Infrastructure：后训练框架
+# 🏗️ 5.2 RL and OPD Infrastructure：后训练框架
 
 > 从 5.1 到 5.2 的逻辑顺序，和第二章到第三章类似：先谈方法论，再谈工程落地。
 
 ---
 
-## 5.2.1 FP4 Quantization Integration：FP4 量化集成
+## 🔢 5.2.1 FP4 Quantization Integration：FP4 量化集成
 
-### 报告做法
+### 📌 报告做法
 
 第三章已经详细提及了 FP4 量化在整个框架中的作用，以及多种类型的精度在不同层之间的流转。
 
@@ -296,7 +296,7 @@ GRM 的思路天生带有自增强效果。如果早期自评审过程没有做�
 
 对于反向传播，也如第三章所说，使用无损的 FP4 到 FP8 反量化来模拟，无缝使用成熟的 FP8 混合精度框架。
 
-### 工程理解
+### 🔧 工程理解
 
 这部分可以理解成：**后训练 runtime 尽量向真实部署 runtime 对齐。**
 
@@ -304,9 +304,9 @@ GRM 的思路天生带有自增强效果。如果早期自评审过程没有做�
 
 ---
 
-## 5.2.2 Efficient Teacher Scheduling for Full-Vocabulary OPD：全词表 OPD 教师调度
+## 🚚 5.2.2 Efficient Teacher Scheduling for Full-Vocabulary OPD：全词表 OPD 教师调度
 
-### 报告做法
+### 📌 报告做法
 
 这部分可以用一张比较通俗的图来介绍：
 
@@ -342,7 +342,7 @@ sorted_batch = [x1, x2, x100, ..., x3]
 # 而且同一时刻显存中最多只保留一个 teacher head。
 ```
 
-### 工程理解
+### 🔧 工程理解
 
 这部分本质是在解决一个非常工程化的问题：**OPD 需要很多老师，但 GPU 不可能同时把所有老师都完整装进来。**
 
@@ -354,9 +354,9 @@ sorted_batch = [x1, x2, x100, ..., x3]
 
 ---
 
-## 5.2.3 Fault-Tolerant Rollout Service：可抢占和容错的 rollout 服务
+## 🧯 5.2.3 Fault-Tolerant Rollout Service：可抢占和容错的 rollout 服务
 
-### 报告做法
+### 📌 报告做法
 
 这一节主要解决分布式 GPU 系统里的资源抢占和故障重放问题。
 
@@ -397,7 +397,7 @@ sorted_batch = [x1, x2, x100, ..., x3]
 继续生成
 ```
 
-### 工程理解
+### 🔧 工程理解
 
 如果从仅工程视角上，我们只是觉得这个办法好，但更妙的地方在于，DS 不仅意识到了这是个工程问题，还意识到了这个工程方案本身会引入新的模型行为偏差。
 
@@ -416,7 +416,7 @@ sorted_batch = [x1, x2, x100, ..., x3]
 - 训练系统会在概率上更容易保留短回答；
 - 长期看，模型会被这种工程偏差推向更短的输出。
 
-### 一些思考
+### 💡 一些思考
 
 这部分非常有提示意义：解决工程问题时，不仅要考虑系统是否能跑，还要考虑工程方案本身是否会引入新的模型行为偏差。
 
@@ -424,9 +424,9 @@ sorted_batch = [x1, x2, x100, ..., x3]
 
 ---
 
-## 5.2.4 Million-Token RL Framework：百万 token 上下文 RL 框架
+## 📦 5.2.4 Million-Token RL Framework：百万 token 上下文 RL 框架
 
-### 报告做法
+### 📌 报告做法
 
 这一节讨论的是 1M context 下，RL / OPD 数据如何搬运和加载，才能更便宜地做训练。
 
@@ -441,13 +441,13 @@ DS 的做法是把 rollout data format 拆成两类：
 
 Heavy per-token fields 通过 shared-memory data loader 加载，可以避免节点内数据重复，并且在 mini-batch 消费完毕后立即释放，从而降低 CPU / GPU 内存压力。
 
-### 工程理解
+### 🔧 工程理解
 
 这本质是把“调度需要的信息”和“训练真正需要的重数据”拆开。
 
 metadata 用来做全局组织和索引，heavy fields 则只在真正训练时按需进入内存。
 
-### 一些思考
+### 💡 一些思考
 
 这个设计可以部分类比到 Agent 的 Skills：
 
@@ -460,9 +460,9 @@ metadata 用来做全局组织和索引，heavy fields 则只在真正训练时�
 
 ---
 
-## 5.2.5 Sandbox Infrastructure：面向 Agentic AI 的沙箱基础设施
+## 🧱 5.2.5 Sandbox Infrastructure：面向 Agentic AI 的沙箱基础设施
 
-### 报告做法
+### 📌 报告做法
 
 有过生产级 Agent 搭建经验的人，都能意识到沙箱基础设施的意义。
 
@@ -485,7 +485,7 @@ DSec 由三个 Rust 组件组成：
 3. 减少重复页面缓存占用并及时回收内存，缓解容器运行时的自旋锁竞争。
 4. 轨迹记录与可抢占安全恢复。
 
-### 一些思考
+### 💡 一些思考
 
 整个后训练阶段其实不仅仅是模型的自我进化，也可以是一个 agent 的自我进化。我们经常谈的所谓 RL 飞轮，就是这么一套观测-评估-改进的循环。
 
@@ -504,7 +504,7 @@ DSec 由三个 Rust 组件组成：
 
 ---
 
-# 5.3 + 5.4 Evaluation：Benchmark 与真实世界评测
+# 📊 5.3 + 5.4 Evaluation：Benchmark 与真实世界评测
 
 一个模型发布之后，大家往往喜欢直接看参数量和 benchmark 分数，判断这个模型是不是很强。
 
@@ -519,9 +519,9 @@ DSec 由三个 Rust 组件组成：
 
 ---
 
-## Coding Agent 测试方式
+## 🧑‍💻 Coding Agent 测试方式
 
-### 报告做法
+### 📌 报告做法
 
 报告中说，他们把 Agent 测试分成了几种范式：
 
@@ -541,7 +541,7 @@ DSec 由三个 Rust 组件组成：
 - 最大交互步数 500；
 - 最大上下文 512K。
 
-### 一些思考
+### 💡 一些思考
 
 由于这套 framework 的形态不可知，工具集又采用了极简化设计，因此这套评测分数未必能直接推广到 Claude Code、Codex 这类 coding agent 上。
 
@@ -559,9 +559,9 @@ Agent 评测不是只测模型，还测：
 
 ---
 
-## 推理强度对 Benchmark 的影响
+## 🎚️ 推理强度对 Benchmark 的影响
 
-### 报告现象
+### 📈 报告现象
 
 先给出 benchmark 完整评分图：
 
@@ -580,7 +580,7 @@ Agent 评测不是只测模型，还测：
 | SWE Verified | 修复 GitHub issue |
 | SWE Pro | 更专业的软件开发任务 |
 
-### 一些思考
+### 💡 一些思考
 
 这说明一个重要问题：推理预算不是越大越好。
 
@@ -595,9 +595,9 @@ Agent 评测不是只测模型，还测：
 
 ---
 
-## Agentic Search vs RAG
+## 🔎 Agentic Search vs RAG
 
-### 报告做法
+### 📌 报告做法
 
 报告原文提到，在 DS 的 Web 端和 App 中：
 
@@ -608,7 +608,7 @@ Agent 评测不是只测模型，还测：
 
 DS 的判断是：agentic search 在复杂任务上明显优于 RAG，并且成本只比标准 RAG 略高。
 
-### 工程理解与一些思考
+### 🔍 工程理解与一些思考
 
 RAG 和 agentic search 之间的争论早已是 agent 工程中的显学，这里不再泛泛比较二者优劣。
 
@@ -620,9 +620,9 @@ Agentic Search 的本质实际上是把 RAG 的调优复杂度转嫁到了模型
 
 ---
 
-## V4 不擅长的场景
+## ⚠️ V4 不擅长的场景
 
-### 报告现象
+### 📈 报告现象
 
 DS 还评测了日常办公场景下 V4 的表现，覆盖金融、教育、法律、技术等 13 个行业，工具包括 Bash 和 web search。
 
@@ -641,39 +641,39 @@ DS 坦率承认，V4-Pro Max Thinking 仍然存在以下不足：
 
 ---
 
-# Final Discussion：限制和未来展望
+# 🔭 Final Discussion：限制和未来展望
 
 在全文小结部分，DS 提出了当前的几个限制，以及未来的一些展望。
 
-## 1. 架构复杂度过高
+## 1️⃣ 架构复杂度过高
 
 为了让 1M context 在工程上可落地，DS 做了大量很重的工程设计，也使用了一些目前只在工程上证明有效、但缺乏完整理论证明的 trick。
 
 这使得整体架构非常复杂。未来他们打算做更系统、更原则化的研究，把架构 “distill down to its most essential designs”，在不损失性能的情况下让架构更优雅。
 
-## 2. MoE loss spike 机制仍不够清楚
+## 2️⃣ MoE loss spike 机制仍不够清楚
 
 第四章中提到的 MoE loss spike 解决方案虽然工程上有用，但机制仍然主要是推测。
 
 未来 DS 会研究训练稳定性的基础问题，加强内部指标监控，走向更原则化、可预测的大规模训练稳定方法。
 
-## 3. 探索新的稀疏维度
+## 3️⃣ 探索新的稀疏维度
 
 除了 MoE 和稀疏注意力，未来 DS 还会探索新的稀疏维度，比如 “more sparse embedding modules”，以进一步提升计算和内存效率，同时不牺牲能力。
 
-## 4. 继续优化低延迟长上下文吞吐
+## 4️⃣ 继续优化低延迟长上下文吞吐
 
 V4 的很多设计都是围绕 1M context 展开的，但长上下文真正好用，不只是能放下 1M token，还要有低延迟、高吞吐和可承受成本。
 
 所以 DS 未来会继续研究低延迟的长上下文吞吐，让长上下文交互更友好。
 
-## 5. 继续押注长周期 Agent 任务
+## 5️⃣ 继续押注长周期 Agent 任务
 
 DS 明确继续押注长周期、多轮、工具化、状态化 agent 任务。
 
 这也是 V4 报告中非常重要的一条主线：长上下文、KV cache、interleaved thinking、沙箱、rollout service、agentic search，本质上都在服务更长周期的 Agent runtime。
 
-## 6. 未来展开多模态研究
+## 6️⃣ 未来展开多模态研究
 
 报告最后也提到，未来会展开多模态研究。
 
@@ -681,7 +681,7 @@ DS 明确继续押注长周期、多轮、工具化、状态化 agent 任务。
 
 ---
 
-# 本章总结
+# ✅ 本章总结
 
 可以看到 DS 在这一章中的阐述已经展示了一个趋势，就是大家都已经把 Agent 能力、长程能力、工具调用能力、环境交互能力，作为大模型后训练的核心目标了。后训练不再是单纯的“给模型更多偏好数据”，而是一个围绕真实 Agent runtime 构建完整训练系统的过程。
 
