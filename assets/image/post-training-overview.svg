@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1448" height="980" viewBox="0 0 1448 980">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+    <style>
+      .title { font: 700 56px -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 30px -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif; fill: #475569; }
+      .head { font: 700 31px -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif; fill: white; }
+      .item { font: 500 25px -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif; fill: #111827; }
+      .caption { font: 500 20px -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif; }
+      .summary { font: 700 29px -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif; }
+      .small-icon { font: 700 30px -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif; }
+    </style>
+  </defs>
+
+  <rect width="1448" height="980" fill="#f8fafc"/>
+
+  <text x="724" y="72" text-anchor="middle" class="title">第 5 章：Post-Training 总览</text>
+  <text x="724" y="122" text-anchor="middle" class="subtitle">从专家训练到 Agent 工程</text>
+
+  <!-- Left column -->
+  <g filter="url(#shadow)">
+    <rect x="48" y="166" width="412" height="620" rx="20" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <path d="M68 166h372a20 20 0 0 1 20 20v82H48v-82a20 20 0 0 1 20-20z" fill="#2563eb"/>
+    <text x="98" y="224" class="small-icon" fill="white">🤖</text>
+    <text x="168" y="224" class="head">Agent 行为协议线</text>
+
+    <rect x="80" y="302" width="348" height="82" rx="10" fill="white" stroke="#bfdbfe"/>
+    <text x="118" y="354" class="small-icon" fill="#2563eb">◉</text>
+    <text x="194" y="354" class="item">Reasoning Effort</text>
+
+    <rect x="80" y="408" width="348" height="82" rx="10" fill="white" stroke="#bfdbfe"/>
+    <text x="112" y="460" class="small-icon" fill="#2563eb">&lt;/&gt;</text>
+    <text x="194" y="460" class="item">Tool Call Schema</text>
+
+    <rect x="80" y="514" width="348" height="82" rx="10" fill="white" stroke="#bfdbfe"/>
+    <text x="116" y="566" class="small-icon" fill="#2563eb">…</text>
+    <text x="194" y="566" class="item">Interleaved Thinking</text>
+
+    <rect x="80" y="620" width="348" height="82" rx="10" fill="white" stroke="#bfdbfe"/>
+    <text x="120" y="672" class="small-icon" fill="#2563eb">⚡</text>
+    <text x="194" y="672" class="item">Quick Instruction</text>
+
+    <line x1="80" y1="732" x2="428" y2="732" stroke="#60a5fa" stroke-width="2" stroke-dasharray="5 5"/>
+    <text x="254" y="770" text-anchor="middle" class="caption" fill="#1e40af">模型如何更稳定地参与 Agent Runtime</text>
+  </g>
+
+  <!-- Middle column -->
+  <g filter="url(#shadow)">
+    <rect x="518" y="166" width="412" height="620" rx="20" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+    <path d="M538 166h372a20 20 0 0 1 20 20v82H518v-82a20 20 0 0 1 20-20z" fill="#16a34a"/>
+    <text x="568" y="224" class="small-icon" fill="white">🧩</text>
+    <text x="642" y="224" class="head">能力整合线</text>
+
+    <rect x="550" y="320" width="348" height="90" rx="10" fill="white" stroke="#bbf7d0"/>
+    <text x="590" y="377" class="small-icon" fill="#16a34a">★</text>
+    <text x="644" y="377" class="item">Specialist Training</text>
+
+    <rect x="550" y="452" width="348" height="90" rx="10" fill="white" stroke="#bbf7d0"/>
+    <text x="590" y="509" class="small-icon" fill="#16a34a">▰</text>
+    <text x="644" y="509" class="item">OPD</text>
+
+    <rect x="550" y="584" width="348" height="90" rx="10" fill="white" stroke="#bbf7d0"/>
+    <text x="590" y="641" class="small-icon" fill="#16a34a">⌁</text>
+    <text x="644" y="641" class="item">GRM</text>
+
+    <line x1="550" y1="732" x2="898" y2="732" stroke="#4ade80" stroke-width="2" stroke-dasharray="5 5"/>
+    <text x="724" y="770" text-anchor="middle" class="caption" fill="#166534">多个专家能力如何合并回统一模型</text>
+  </g>
+
+  <!-- Right column -->
+  <g filter="url(#shadow)">
+    <rect x="988" y="166" width="412" height="620" rx="20" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.5"/>
+    <path d="M1008 166h372a20 20 0 0 1 20 20v82H988v-82a20 20 0 0 1 20-20z" fill="#7c3aed"/>
+    <text x="1038" y="224" class="small-icon" fill="white">▦</text>
+    <text x="1098" y="224" class="head">后训练基础设施线</text>
+
+    <rect x="1020" y="296" width="348" height="72" rx="10" fill="white" stroke="#ddd6fe"/>
+    <text x="1058" y="342" class="small-icon" fill="#7c3aed">▣</text>
+    <text x="1128" y="342" class="item">FP4 Rollout</text>
+
+    <rect x="1020" y="386" width="348" height="72" rx="10" fill="white" stroke="#ddd6fe"/>
+    <text x="1058" y="432" class="small-icon" fill="#7c3aed">◷</text>
+    <text x="1128" y="432" class="item">Teacher Scheduling</text>
+
+    <rect x="1020" y="476" width="348" height="72" rx="10" fill="white" stroke="#ddd6fe"/>
+    <text x="1058" y="522" class="small-icon" fill="#7c3aed">▰</text>
+    <text x="1128" y="522" class="item">WAL / KV Resume</text>
+
+    <rect x="1020" y="566" width="348" height="72" rx="10" fill="white" stroke="#ddd6fe"/>
+    <text x="1058" y="612" class="small-icon" fill="#7c3aed">∞</text>
+    <text x="1128" y="612" class="item">Million-Token RL</text>
+
+    <rect x="1020" y="656" width="348" height="72" rx="10" fill="white" stroke="#ddd6fe"/>
+    <text x="1058" y="702" class="small-icon" fill="#7c3aed">◇</text>
+    <text x="1128" y="702" class="item">Sandbox</text>
+
+    <line x1="1020" y1="748" x2="1368" y2="748" stroke="#a78bfa" stroke-width="2" stroke-dasharray="5 5"/>
+    <text x="1194" y="770" text-anchor="middle" class="caption" fill="#5b21b6">这套方案如何在真实分布式系统中跑起来</text>
+  </g>
+
+  <!-- Summary strip -->
+  <g filter="url(#shadow)">
+    <rect x="48" y="838" width="1352" height="98" rx="18" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.2"/>
+    <circle cx="112" cy="887" r="30" fill="none" stroke="#d97706" stroke-width="3"/>
+    <circle cx="112" cy="887" r="10" fill="#d97706"/>
+    <text x="172" y="897" class="summary" fill="#1f2937">Post-Training = </text>
+    <text x="475" y="897" class="summary" fill="#1d4ed8">模型行为协议训练</text>
+    <text x="737" y="897" class="summary" fill="#166534"> + 专家能力整合</text>
+    <text x="1016" y="897" class="summary" fill="#6d28d9"> + 运行时基础设施托底</text>
+  </g>
+</svg>
