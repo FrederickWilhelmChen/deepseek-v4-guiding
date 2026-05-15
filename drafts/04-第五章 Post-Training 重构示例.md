@@ -1,6 +1,4 @@
-# 第 5 章：Post-Training 强化学习策略改良
-
-> 本文件是第五章的局部重构示例，暂不替换正式正文。当前只重构“章节导读 + 5.1 开头 + Reasoning Effort”这一小段，用于确认体例是否适合继续推广到全文。
+# 第 5 章：Post-Training 后训练，Agent 行为对齐和 RL 范式转变
 
 ---
 
@@ -39,8 +37,6 @@
 
 这一部分相对庞杂，报告中提到了多个点，而这些均可以为 Agent 工程提供启发。
 
-当前先看第一个点：Reasoning Effort。
-
 ---
 
 ## Reasoning Effort：推理强度
@@ -71,18 +67,10 @@ Explicitly write out your entire deliberation process, documenting every interme
 明确写出你整个审议过程，记录每一个中间步骤、考虑过的替代方案和被否定的假设，以确保没有任何假设被放过
 ```
 
-### 轻技术解释
+### 一些思考
 
-这一点其实已经和 Claude / GPT 系列模型相仿，提供不同档位的推理强度，用推理预算来换取思维强度并提高任务实现能力。有的通过控制 reasoning 的 token 预算来控制，有的则是直接提供不同的推理档位。
+这一做法其实已经和 Claude / GPT 系列模型相仿，提供不同档位的推理强度，用推理预算来换取思维强度并提高任务实现能力。内在逻辑均是通过控制 reasoning 的 token 预算来控制，外化出来的就是不同的推理档位。过去某些做法也会直接让用户输入一个token预算数字来控制推理强度。
 
 GPT 系列的模型，推理内容全部是内化的，也就是说 Chain of Thought 本身不会暴露给外部作为 message 吐出模型。Claude 系列模型虽然会展示 thinking 的过程，但也不是把原始的 CoT 暴露出来，而是通过受控的 extended thinking / thinking blocks 机制呈现或管理。
 
 相反地，国内模型如 kimi / qwen / deepseek 均是默认会用不同的格式，显式地吐出 reasoning 过程，这会带来后续 agent 交互的问题，我们后续马上就会提及。
-
-### 对 Agent 工程的启发
-
-Reasoning Effort 本身不是一个很复杂的概念，但它对 Agent 工程的意义在于：模型推理强度开始变成一个可以被训练、被调度、被显式区分的运行参数。
-
-对于普通问答或简单工具调用，不一定需要开启最高推理强度；但对于复杂代码任务、长链路工具调用、线上故障排查这类任务，更高的 reasoning budget 可能会直接影响任务完成质量。
-
-这意味着 Agent runtime 后续可能不应该只关心“调用哪个模型”，还应该关心“以什么推理强度调用模型”。
