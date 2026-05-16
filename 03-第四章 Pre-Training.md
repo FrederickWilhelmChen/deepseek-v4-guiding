@@ -1,6 +1,6 @@
 # 🌱 第 4 章 Pre-Training：预训练工程
 
-> 本章回答的是：在算法结构和 GPU 基础设施准备好之后，DeepSeek V4 如何组织真正的预训练过程。
+> 在算法结构和 GPU 基础设施准备好之后，V4 在预训练过程中的各项工程处理方案
 
 ---
 
@@ -8,12 +8,12 @@
 
 这一章主要讨论三件事：
 
-| 模块 | 核心问题 | 读者应关注什么 |
-|---|---|---|
-| Data Construction | 用什么数据训练 | 数据清洗、长文档、FIM、sample-level attention mask |
-| Model / Training Setups | 怎么安排训练节奏 | Flash / Pro 差异、序列长度递进、CSA 引入时机 |
+| 模块 | 核心问题 | 解决方案                                            |
+|---|---|-------------------------------------------------|
+| Data Construction | 用什么数据训练 | 数据清洗、长文档、FIM、sample-level attention mask        |
+| Model / Training Setups | 怎么安排训练节奏 | Flash / Pro 差异、序列长度递进、CSA 引入时机                  |
 | Training Instability | 训练不稳定怎么办 | Loss spike、Anticipatory Routing、SwiGLU Clamping |
-| Evaluation | 基模效果怎么看 | 不盯分数，重点看不同 benchmark 反映的能力差异 |
+| Evaluation | 基模效果怎么看 | 不盯分数，重点看不同 benchmark 反映的能力差异                    |
 
 ![第 4 章 Pre-Training 总览](./assets/image/pre-training-overview.svg)
 
@@ -40,7 +40,9 @@ DeepSeek 在 V3 预训练数据基础上，构造了一个更多样、更高质�
 
 这和工程里常说的 **Garbage in, Garbage out** 是一个道理。
 
-当前模型厂商已经普遍意识到：模型生成的大量模板化内容会污染后续训练，必须做专项清洗。
+这已经成为当前模型厂商的共识：
+
+> 模型自己生成生成的大量模板化内容，会污染到模型自己的后续训练，必须做专项清洗。否则它会不停的学自己生成的质量参差不齐的内容，最后导致模型能力崩溃。
 
 ---
 
@@ -57,12 +59,14 @@ DeepSeek 更重视这些语料：
 
 对长上下文训练而言，语料组织大体有两种方式：
 
-| 方式 | 特点 | 问题 |
-|---|---|---|
-| 多段短文本拼接 | 可以快速构造长序列，提高 token 利用率 | 不同段落语义未必连续 |
-| 原生长文本 | 逻辑自然连续，更适合训练长程依赖 | 高质量长文档语料稀缺 |
+| 方式 | 特点 | 问题           |
+|---|---|--------------|
+| 多段短文本拼接 | 可以快速构造长序列，提高 token 利用率 | 不同段落语义大概率不连续 |
+| 原生长文本 | 逻辑自然连续，更适合训练长程依赖 | 高质量长文档语料稀缺   |
 
 所以，从训练质量看，原生长文本当然更好；但从数据规模看，拼接 packing 仍然是广泛采用的工程手段。
+
+> 需要注意的是，多段短文本拼接会引入额外的的问题，这部分问题在后续 Sample-level Attention Mask 里会提到。
 
 ---
 
@@ -90,13 +94,46 @@ FIM 非常匹配 coding 场景。
 
 因为在真实编码中，很多任务不是在文件尾部续写，而是在已有代码的两行之间插入一段新代码。
 
-也就是说，训练阶段需要让模型学会：
-
-```plaintext
-给定上文 + 给定下文 -> 生成中间内容
-```
+也就是说，训练阶段需要让模型学会：给定上文 + 给定下文 -> 生成中间内容
 
 这比单纯“从左到右续写”更符合代码编辑任务。
+
+还是拿java的例子来距离说：
+
+```java
+/**
+ * 原始代码
+ */
+void updateCorpHotelOrderData(XXXXBO xxxBO) {
+    // 组装request
+    XXXRequestType request = buildXXXRequest(xxxBO);
+    
+    // 调用soa接口，得到了response
+    XXXResponseType response = callXXXService(request);
+    
+    // 把response 里的数据组装更新到数据库里
+    XXXDTO xxxDTO = buildXXXDTO(response);
+    xxxDAO.update(xxxDTO);
+}
+
+/**
+ * 现在需要在把response数据组装更新到数据库里这一步之前，插入一段新的逻辑：查另一个接口B，把B的response也拿进来组装DTO
+ * /
+void updateCorpHotelOrderData(XXXXBO xxxBO) {
+    // 组装request
+    XXXRequestType request = buildXXXRequest(xxxBO);
+    
+    // 调用soa接口，得到了response
+    XXXResponseType response = callXXXService(request);
+    
+    // -> 这里就需要LLM插一段逻辑进来，它既需要知道上文已经有了哪些BO和reponse，也要知道下文用哪些BO或者response来组装DTO
+    // LLM也同时还要看是不是需要把下文的代码也给改了才行，比如buildXXXDTO方法里可能也需要把B的response作为输入参数加进来。
+    
+    // 把response 里的数据组装更新到数据库里
+    XXXDTO xxxDTO = buildXXXDTO(response);
+    xxxDAO.update(xxxDTO);
+}
+```
 
 ---
 
@@ -104,7 +141,7 @@ FIM 非常匹配 coding 场景。
 
 训练过程中，为了提高效率，也为了组装长上下文，常常会把多段不相关文本 packing 到同一个 sequence 里训练。
 
-但对模型来说，它不知道这些文本本来毫无关系。如果不加限制，模型可能从这些无关文本之间学出奇怪关联。
+但对模型来说，它不知道这些文本本来毫无关系。如果不加限制，模型可能从这些无关文本之间学出奇怪的关联。
 
 DeepSeek 的方案是：
 
@@ -138,6 +175,8 @@ MoE：1 个 shared expert + 256 个 routed experts
 后续层交替使用 CSA 和 HCA
 ```
 
+> 更具体的模型配置参数，可以参考仓库里 `config/deepseek-v4-flash-config.json`，并辅助对照关系文档阅读。
+
 ## 🧠 Pro
 
 ```plaintext
@@ -151,6 +190,8 @@ MoE：1 个 shared expert + 384 个 routed experts
 后续层交替使用 CSA 和 HCA
 ```
 
+> 更具体的模型配置参数，可以参考仓库里 `config/deepseek-v4-pro-config.json`，并辅助对照关系文档阅读。
+
 ## 🔍 Flash / Pro 前两层 attention 差异
 
 两个模型在前两层注意力构造上有一个值得注意的区别：
@@ -158,7 +199,7 @@ MoE：1 个 shared expert + 384 个 routed experts
 - Flash 前两层使用 dense pure sliding window attention。
 - Pro 前两层直接使用 HCA。
 
-我对可能原因的推测如下，报告中没有直接说明：
+笔者对可能原因的推测如下，报告中没有直接说明：
 
 1. Flash 更强调低成本，滑动窗口不需要压缩机制，也不需要配套工程处理。
 2. HCA 更像粗粒度全局背景，DeepSeek 可能认为对 Flash 而言，近处的稠密注意力更重要，低层没有必要太早建立全局注意力的机制。这里可能是DS对Flash和Pro的定位不同而做的工程处理，Flash更倾向于优先理解近处上下文，而Pro更倾向于从一开始就建立全局感觉。
@@ -291,7 +332,7 @@ flowchart TD
 
 这样即使中间变量偶发异常，也会被截断在可控范围内，降低异常值扩散并诱发 loss spike 的概率。
 
-## ⚠️ 对这两个方案的读法
+## ⚠️ 工程上的经验化方案
 
 报告中也提到，这两个方案不是严谨的数学优化，而是经验化工程方案。
 
@@ -300,6 +341,7 @@ flowchart TD
 - 原因归纳是经验式的；
 - 不是完整数学推导；
 - 但工程上被证明有效。
+- 知道有用，但对为什么有用这里，还不是特别的确定
 
 ---
 
