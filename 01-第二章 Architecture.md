@@ -14,24 +14,7 @@ DeepSeek V4 在 Architecture 层面主要做了三件事：
 | 怎么让信息穿过深层网络 | mHC | 给残差流增加更多通路，但用约束保证稳定 |
 | 怎么更新大矩阵参数 | Muon | 不只逐元素微调，而是考虑矩阵整体几何结构 |
 
-```mermaid
-flowchart LR
-    A[1M Context 与长程推理] --> B[CSA / HCA]
-    A --> C[mHC]
-    A --> D[Muon]
-
-    B --> B1[近期上下文保真]
-    B --> B2[中远程历史选择性读取]
-    B --> B3[远程历史粗粒度压缩]
-
-    C --> C1[多残差路径]
-    C --> C2[双随机矩阵约束]
-    C --> C3[稳定信息流]
-
-    D --> D1[矩阵级更新]
-    D --> D2[Newton-Schulz 正交化]
-    D --> D3[压平异常主方向]
-```
+![第 2 章 Architecture 总览](./assets/image/architecture-overview.svg)
 
 ---
 
@@ -65,22 +48,7 @@ DeepSeek V4 做的，就是把这种人类阅读方式做进模型内部。
 
 ## 🗺️ 结构图
 
-```mermaid
-flowchart LR
-    Input[长上下文输入] --> SW[Sliding Window\n最近上下文\n不压缩]
-    Input --> CSA[CSA\n中等比例压缩]
-    Input --> HCA[HCA\n高比例全局压缩]
-
-    SW --> NearUse[最近内容直接参与 attention]
-    CSA --> Indexer[按块压缩并建立索引]
-    Indexer --> Select[选择最相关的历史块]
-    Select --> Return[被选中的历史块回流参与 attention]
-    HCA --> GlobalSense[保留远处还有什么的全局感觉]
-
-    NearUse --> Final[最终混合注意力]
-    Return --> Final
-    GlobalSense --> Final
-```
+![CSA / HCA / Sliding Window 直觉理解图](./assets/image/csa-hca-explainer.svg)
 
 ## 🔧 轻技术解释
 
