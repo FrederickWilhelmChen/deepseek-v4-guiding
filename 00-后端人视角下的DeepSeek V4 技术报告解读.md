@@ -20,32 +20,7 @@ DeepSeek V4 技术报告可以粗略拆成五个层次：
 
 ## 🗺️ 全文路线图
 
-```mermaid
-flowchart TD
-    A[核心问题：1M 上下文 + 长程推理 + 可承受成本]
-    A --> B[第2章 Architecture]
-    A --> C[第3章 General Infrastructure]
-    A --> D[第4章 Pre-Training]
-    A --> E[第5章 Post-Training]
-
-    B --> B1[CSA / HCA：长上下文 KV 压缩]
-    B --> B2[mHC：残差流稳定性优化]
-    B --> B3[Muon：大规模矩阵优化器]
-
-    C --> C1[Kernel / TileLang]
-    C --> C2[FP4 QAT]
-    C --> C3[训练框架]
-    C --> C4[KV Cache 管理]
-
-    D --> D1[数据构造]
-    D --> D2[训练 Schedule]
-    D --> D3[Loss Spike 稳定性处理]
-    D --> D4[Base Model 评测]
-
-    E --> E1[GRM：unverified task 评价优化]
-    E --> E2[OPD：专家能力蒸馏回统一模型]
-    E --> E3[Agent / Coding / Reasoning 对齐]
-```
+![summary](./assets/image/summary.png)
 
 ---
 
