@@ -62,7 +62,7 @@ def main() -> None:
     ])
 
     print_matrix("原始残差连接： H", h)
-    print("原始 H 归一化:", round(np.linalg.norm(h), 4))
+    print("原始 H 范数:", round(np.linalg.norm(h), 4))
 
     # 1. 普通残差连接：
     # 可以把它理解成单位矩阵 I。
