@@ -15,29 +15,7 @@
 | Training Instability | 训练不稳定怎么办 | Loss spike、Anticipatory Routing、SwiGLU Clamping |
 | Evaluation | 基模效果怎么看 | 不盯分数，重点看不同 benchmark 反映的能力差异 |
 
-```mermaid
-flowchart TD
-    A[Pre-Training] --> B[Data Construction]
-    A --> C[Model Setups]
-    A --> D[Training Setups]
-    A --> E[Stability]
-    A --> F[Evaluation]
-
-    B --> B1[清洗自动生成 / 模板化网页]
-    B --> B2[保留数学 / 代码 / agentic / long text]
-    B --> B3[Tokenizer / FIM / Packing]
-    B --> B4[Sample-level Attention Mask]
-
-    C --> C1[Flash]
-    C --> C2[Pro]
-
-    D --> D1[AdamW + Muon]
-    D --> D2[4K -> 16K -> 64K -> 1M]
-    D --> D3[CSA warmup]
-
-    E --> E1[Anticipatory Routing]
-    E --> E2[SwiGLU Clamping]
-```
+![第 4 章 Pre-Training 总览](./assets/image/pre-training-overview.svg)
 
 ---
 
