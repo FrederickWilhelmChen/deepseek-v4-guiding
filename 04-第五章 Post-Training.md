@@ -96,9 +96,9 @@ V4 中，DS 引入了一种新的工具调用模式，该模式使用特殊的 `
 
 如果我们注意看非常著名也非常好用的 superpowers 的提示词撰写，里面也使用了 `<hard-gate></hard-gate>` 这样的 XML 模式组装，大大提高了 agent 使用 skill，并依据 skill 做事的指令跟随能力。
 
-同时 DS 用 `|DSML|` 这种特殊的标记来强化 tool call schema 的稳定性
+同时 DS 用 `|DSML|` 这种特殊的标记来强化 tool call schema 的稳定性。
 
-> DS的这种处理可能隐含的是：我们使用 V4 模型在**某些使用非官方 tools 参数**的场景下，**使用 `|DSML|` 这个标记可能对 tool call 的稳定性和指令跟随有正向作用，因为模型和 tokenizer 在训练时就天然地更“认识”这样一个标记，并且做过大规模的指令对齐。**
+> DS 的这种处理可能隐含的是：我们使用 V4 模型在**某些使用非官方 tools 参数**的场景下，**使用 `|DSML|` 这个标记可能对 tool call 的稳定性和指令跟随有正向作用，因为模型和 tokenizer 在训练时就天然地更“认识”这样一个标记，并且做过大规模的指令对齐。**
 
 这部分内容以**个人推测**为主，大家可以自行测试。
 
@@ -704,7 +704,7 @@ DS 坦率承认，V4-Pro Max Thinking 仍然存在以下不足：
 
 除了 MoE 和稀疏注意力，未来 DS 还会探索新的稀疏维度，比如 “more sparse embedding modules”，以进一步提升计算和内存效率，同时不牺牲能力。
 
-在这个部分，实际上 DS 在 2026.01 发表了论文：Conditional Memory via Scalable Lookup: A New Axis of Sparsity for Large Language Models (https://arxiv.org/abs/2601.07372)，这篇论文讲了他们的 Engram （https://github.com/deepseek-ai/Engram） 方向是稀疏查表静态记忆
+在这个部分，报告参考文献中列出了 DeepSeek 在 2026.01 发表的论文：Conditional Memory via Scalable Lookup: A New Axis of Sparsity for Large Language Models (https://arxiv.org/abs/2601.07372)，这篇论文讲了他们的 Engram （https://github.com/deepseek-ai/Engram） 方向是稀疏查表静态记忆
 
 > DS 的判断是，很多固定实体、局部搭配、公式化语言模式，本来可以查表解决，却被迫用 attention + FFN 在早期层里算出来。 
 

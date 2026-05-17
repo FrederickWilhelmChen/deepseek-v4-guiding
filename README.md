@@ -28,7 +28,8 @@ DeepSeek V4 报告可以围绕一个主线来理解：
 - 1M context 不只是“上下文窗口变长”，还会带来 prefill 成本、KV Cache 显存、服务吞吐和私有化部署压力；
 - CSA / HCA 等注意力压缩机制，是为了让长上下文在推理阶段仍然可承受；
 - mHC、Muon、SwiGLU clamp、loss spike 处理等设计，指向大规模训练稳定性；
-- FP4 QAT、TileLang、deterministic kernels、训练框架和推理框架，指向低精度与高吞吐的系统落地；
+- TileLang、deterministic kernels、训练框架和推理框架，指向高吞吐和可复现的系统落地；
+- FP4 QAT 指向后训练阶段对低精度部署形态的适配；
 - GRM、OPD、reasoning effort、tool call schema、interleaved thinking，指向后训练阶段对 Agent、代码和工具使用能力的统一吸收。
 
 ## 阅读入口
@@ -39,9 +40,9 @@ DeepSeek V4 报告可以围绕一个主线来理解：
 |---|---|
 | [00-后端人视角下的DeepSeek V4 技术报告解读.md](./00-%E5%90%8E%E7%AB%AF%E4%BA%BA%E8%A7%86%E8%A7%92%E4%B8%8B%E7%9A%84DeepSeek%20V4%20%E6%8A%80%E6%9C%AF%E6%8A%A5%E5%91%8A%E8%A7%A3%E8%AF%BB.md) | 全文总览、阅读路径、核心问题和前置知识 |
 | [01-第二章 Architecture.md](./01-%E7%AC%AC%E4%BA%8C%E7%AB%A0%20Architecture.md) | MoE、mHC、CSA / HCA、Muon 等架构设计 |
-| [02-第三章 General Infrastructure.md](./02-%E7%AC%AC%E4%B8%89%E7%AB%A0%20General%20Infrastructure.md) | Expert Parallelism、TileLang、deterministic kernels、FP4 QAT、训练和推理基础设施 |
+| [02-第三章 General Infrastructure.md](./02-%E7%AC%AC%E4%B8%89%E7%AB%A0%20General%20Infrastructure.md) | Expert Parallelism、TileLang、deterministic kernels、训练和推理基础设施 |
 | [03-第四章 Pre-Training.md](./03-%E7%AC%AC%E5%9B%9B%E7%AB%A0%20Pre-Training.md) | 数据构造、Flash / Pro 规模差异、训练节奏、训练稳定性和 base model 评测 |
-| [04-第五章 Post-Training.md](./04-%E7%AC%AC%E4%BA%94%E7%AB%A0%20Post-Training.md) | 后训练 pipeline、GRM、OPD、RL 基础设施、Agent / coding / tool use 评测 |
+| [04-第五章 Post-Training.md](./04-%E7%AC%AC%E4%BA%94%E7%AB%A0%20Post-Training.md) | 后训练 pipeline、GRM、OPD、FP4 QAT、RL 基础设施、Agent / coding / tool use 评测 |
 | [模型参数配置表与导读的对照关系.md](./%E6%A8%A1%E5%9E%8B%E5%8F%82%E6%95%B0%E9%85%8D%E7%BD%AE%E8%A1%A8%E4%B8%8E%E5%AF%BC%E8%AF%BB%E7%9A%84%E5%AF%B9%E7%85%A7%E5%85%B3%E7%B3%BB.md) | 将 `config.json` 中的关键字段映射到导读中的概念 |
 
 也可以按兴趣选择入口：
