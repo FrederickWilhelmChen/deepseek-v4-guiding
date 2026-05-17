@@ -17,21 +17,6 @@
 
 如果你主要是业务开发或 Agent 应用开发者，本项目会尽量把算法和训练工程术语翻译成更直观的工程问题，可以精读。
 
-## 核心问题
-
-DeepSeek V4 报告可以围绕一个主线来理解：
-
-> 如何同时支持超长上下文、长程推理和可承受成本？
-
-围绕这个问题，报告中的很多设计会自然连在一起：
-
-- 1M context 不只是“上下文窗口变长”，还会带来 prefill 成本、KV Cache 显存、服务吞吐和私有化部署压力；
-- CSA / HCA 等注意力压缩机制，是为了让长上下文在推理阶段仍然可承受；
-- mHC、Muon、SwiGLU clamp、loss spike 处理等设计，指向大规模训练稳定性；
-- TileLang、deterministic kernels、训练框架和推理框架，指向高吞吐和可复现的系统落地；
-- FP4 QAT 指向后训练阶段对低精度部署形态的适配；
-- GRM、OPD、reasoning effort、tool call schema、interleaved thinking，指向后训练阶段对 Agent、代码和工具使用能力的统一吸收。
-
 ## 阅读入口
 
 建议先读总览，再按兴趣进入对应章节。
