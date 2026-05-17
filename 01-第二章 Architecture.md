@@ -19,7 +19,7 @@ DeepSeek V4 在 Architecture 层面主要做了四件事：
 
 ---
 
-# 1️⃣ DeepSeek MoE
+## 1️⃣ DeepSeek MoE
 
 > 前置知识：MoE 的基本概念
 
@@ -37,7 +37,7 @@ V4 延续了之前 V3 中 MoE 的核心设计：使用细粒度专家和共享�
 > pro 和 flash 模型的专家总数，每个 token 激活的专家数量，以及 shared expert 的数量等参数，参见 `模型参数配置表与导读的对照关系.md` 中 `n_routed_experts`， `n_shared_experts`，`num_experts_per_tok` 三个参数 。
 
 除此之外，V4 延续了 V3 的 MTP 模块和目标。
-> MTP 是 MoE 的一个重要补充机制，专门针对多 token 预测任务设计。它通过引入一个额外的损失项，鼓励模型在多个 token 上同时激活相关专家，从而提升模型在多 token 预测上的表现。
+> MTP 是 Multi-Token Prediction，多 token 预测目标。它在常规 next-token prediction 之外，让模型在同一位置学习预测更远的未来 token，从而提供更密集的训练信号。
 
 ## 🔧 V4 MoE 的新设计
 
@@ -46,7 +46,7 @@ V4 MoE 相较于 V3，做了以下几个改变：
 1. 将计算 Affinity Scores 的激活函数从 Sigmoid(·) 改为 Sqrt(Softplus(·))
 > Affinity Scores 可以被理解为专家路由判断某个 token 和某个 expert 有多匹配的分数。
 
-激活函数从 Sigmoid(·) 改为 Sqrt(Softplus(·))，可以提高 top-k export 选择的区分度，减少 sigmoid 饱和带来的梯度问题。
+激活函数从 Sigmoid(·) 改为 Sqrt(Softplus(·))，可以提高 top-k expert 选择的区分度，减少 sigmoid 饱和带来的梯度问题。
 
 下面提供了一个可运行脚本来直观对比两个函数的结果，大家可自行执行脚进行理解
 [激活函数对比](./scripts/affinity_scores_sample.py)
@@ -72,7 +72,7 @@ V4 MoE 在这个 expert router 的过程中，把前几个 Transformer 块中的
 
 ---
 
-# 2️⃣ mHC：混合残差连接的稳定器
+## 2️⃣ mHC：混合残差连接的稳定器
 
 > 前置知识：残差连接。  
 > 本部分理解难度较大，可以先只看通俗解释和小结。
@@ -169,7 +169,7 @@ mHC 的核心不是“让信息路径越多越好”，而是：
 
 ---
 
-# 3️⃣ CSA / HCA：交替使用的注意力压缩机制
+## 3️⃣ CSA / HCA：交替使用的注意力压缩机制
 
 > 前置知识：Transformer Attention、KV Cache、长上下文推理。
 
@@ -193,7 +193,7 @@ mHC 的核心不是“让信息路径越多越好”，而是：
 - 你会优先看一下这个接口的历史 commit 以及这块业务相关的文档，对这个接口为什么要有，要干啥的，之前同事怎么做的有了个了解。
 - 你会看看这个项目的README.md，再看一下这个项目的模块和分层，代码风格，保留了一个这个项目是干啥的，代码风格，分层规则的整体印象。
 
-DeepSeek V4 做的，就是把这种人类阅读方式做进模型内部。
+可以把 DeepSeek V4 的 CSA / HCA 粗略类比为这种分层阅读方式：最近上下文保真，部分历史选择性读取，更远历史保留低分辨率背景。
 
 ## 🗺️ 结构图
 
@@ -241,7 +241,7 @@ DeepSeek V4 做的，就是把这种人类阅读方式做进模型内部。
 
 ---
 
-# 4️⃣ Muon：大规模训练优化器
+## 4️⃣ Muon：大规模训练优化器
 
 > 前置知识：基础 Transformer、神经网络、梯度下降、AdamW。  
 > 本部分理解难度较大，可以先只看简化通俗解释和效果总结。  
@@ -342,7 +342,7 @@ Muon 的核心效果可以概括为三点：
 
 ---
 
-# 🧷 报告提到的几个补丁
+## 🧷 报告提到的几个补丁
 
 除了 CSA / HCA 这类核心注意力机制外，报告在 Architecture 部分还提到了一些更局部的结构性处理，共同指向同一个问题。
 
@@ -360,7 +360,7 @@ Muon 的核心效果可以概括为三点：
 
 ---
 
-# ✅ 本章总结
+## ✅ 本章总结
 
 本章主要是 DeepSeek V4 在底层算法层面针对长上下文、大规模参数容量、深层信息流和大规模训练的几个核心设计：HCA/CSA、MoE、mHC 和 Muon。
 

@@ -19,13 +19,12 @@
 | 3.1 Expert Parallelism | MoE 中的时间组织 | 把 all-to-all 通信成本尽量藏进执行波次 |
 | 3.2 TileLang | DeepSeek 自己的 kernel 平台 | 在研发效率和执行性能之间取平衡 |
 | 3.3 Deterministic Kernels | 可复现性与稳定性 | 约束浮点误差放大后的行为偏移 |
-| 3.4 FP4 QAT | 低精度训练工程化 | 让模型在训练阶段就适应部署精度 |
-| 3.5 Training Framework | 训练框架适配 | 把 Muon、mHC、CSA/HCA 等创新接进分布式训练 |
-| 3.6 Inference Framework | 推理缓存系统 | 适配长上下文下多形态的 KV cache 管理 |
+| 3.4 Training Framework | 训练框架适配 | 把 Muon、mHC、CSA/HCA 等创新接进分布式训练 |
+| 3.5 Inference Framework | 推理缓存系统 | 适配长上下文下多形态的 KV cache 管理 |
 
 ---
 
-# 🌊 3.1 Expert Parallelism：MoE 中的时间组织
+## 🌊 3.1 Expert Parallelism：MoE 中的时间组织
 
 这一节关注的是 MoE 训练里最直接、也最昂贵的工程问题之一：专家路由带来的 GPU 间通信。
 
@@ -55,19 +54,19 @@ MoE 的优势很清楚：每个 token 只激活少量 expert，所以 activated 
 > 计算时间并非显著大于通信时间;
 > 系统总时间应当最优化于计算时间和通信时间的最大值
 
-Expert Wave 的核心就是把专家执行拆成小波次：某一波 token 一到就开始算，而不是等全部通信完成再统一处理。这样系统总时间就更接近 <text underline="true">*通信时间和计算时间的最大值*</text>，而不是把几段时间直接相加。
+Expert Wave 的核心就是把专家执行拆成小波次：某一波 token 一到就开始算，而不是等全部通信完成再统一处理。这样系统总时间就更接近 **通信时间和计算时间的最大值**，而不是把几段时间直接相加。
 
-做这个优化的必要性在于：很多场景下，<text underline="true">*计算时间并非显著大于通信时间*</text>。真实的 GPU 训练和推理负载有时可能是细碎的，长度也明显不齐，计算时间有时甚至能和通信时间打平。
+做这个优化的必要性在于：很多场景下，**计算时间并非显著大于通信时间**。真实的 GPU 训练和推理负载有时可能是细碎的，长度也明显不齐，计算时间有时甚至能和通信时间打平。
 
 通信带来的不仅是延时，还是 GPU 的空转和资源浪费。通信不只是网络延迟问题，还会造成计算流等待，并挤压计算资源。
 
-对于 GPU，其实 <text underline="true">*batch 越大越好*</text>，因为可以把矩阵乘法做大，利用率更高。最不想看到的其实是一堆小矩阵计算，或者一批里混入某些很慢的长尾请求。
+对于 GPU，其实 **batch 越大越好**，因为可以把矩阵乘法做大，利用率更高。最不想看到的其实是一堆小矩阵计算，或者一批里混入某些很慢的长尾请求。
 
 小矩阵计算会带来 GPU 空转和资源浪费，长尾请求会让一批里的其他请求一起等待。然而在实际后训练中，这种小计算和长尾效应非常普遍。
 
 ---
 
-# 🛠️ 3.2 TileLang：DeepSeek 自己的 kernel 平台
+## 🛠️ 3.2 TileLang：DeepSeek 自己的 kernel 平台
 
 ## 📌 问题背景
 
@@ -103,7 +102,7 @@ Host Codegen 负责在 kernel 编译的时候就提前生成这些前置代码�
 
 ### SMT Solver Assisted Formal Integer Analysis
 
-这部分涉及比较抽象的数学解释。从尽可能通俗的角度来说，<text underline="true">*kernel 的编译器需要证明：这个运算是安全的*</text>。如果运算的安全性能够被数学证明，那么编译器就可以更大胆地做优化。
+这部分涉及比较抽象的数学解释。从尽可能通俗的角度来说，**kernel 的编译器需要证明：这个运算是安全的**。如果运算的安全性能够被数学证明，那么编译器就可以更大胆地做优化。
 
 一个 Java 代码的类比：
 
@@ -124,7 +123,7 @@ for (int i = 0; i < 10; i++) {
 
 ---
 
-# 🎯 3.3 Deterministic Kernels：确保可复现性并约束对模型行为的影响
+## 🎯 3.3 Deterministic Kernels：确保可复现性并约束对模型行为的影响
 
 这一节讨论的问题并不新，但在 MoE、长上下文和 Agent 轨迹场景下会被显著放大：浮点误差如何从底层数值差异演变成上层行为差异。
 
@@ -140,7 +139,7 @@ print(a)
 print(b)
 ```
 
-运行上面这段 Python 代码，`a` 的值是 `1`，而 `b` 的值是 `0`。这就是 <text underline="true">*计算机浮点数加法不满足结合律*</text>。也就是说，在浮点数运算里，即使是同一批数，顺序位置不同，最后的结果也可能完全不同。
+运行上面这段 Python 代码，`a` 的值是 `1`，而 `b` 的值是 `0`。这就是 **计算机浮点数加法不满足结合律**。也就是说，在浮点数运算里，即使是同一批数，顺序位置不同，最后的结果也可能完全不同。
 
 这其实也是很多人疑惑“temperature 已经设为 0 了，大模型为什么还是每次可能给出不同结果”的根因之一。
 
@@ -204,9 +203,9 @@ DeepSeek 在工程上的策略是设计两个计算 kernel：
 
 ### 2. Determinism
 
-Batch-Invariant 关注的是：<text underline="true">*同一个 token 放在不同 batch 位置，输出是否一样*</text>。
+Batch-Invariant 关注的是：**同一个 token 放在不同 batch 位置，输出是否一样**。
 
-Determinism 关注的则是：<text underline="true">*同样输入、同样配置，重复跑多次是否一样*</text>。
+Determinism 关注的则是：**同样输入、同样配置，重复跑多次是否一样**。
 
 普通做法里常见的问题包括：
 
@@ -225,82 +224,15 @@ Deterministic 对 debug 硬件或软件问题意义极大。当训练出现 `los
 
 ---
 
-# 🧮 3.4 FP4 QAT：把极致成本压缩工程化
-
-> 前置知识：`FP4 / FP8 / BF16 / FP32`
-
-这一节开始进入精度与成本之间的取舍问题。它关心的不是“低精度能不能做”，而是“如何把低精度真正纳入训练体系，而不是只在部署阶段临时压缩”。
-
-## 📌 问题背景
-
-从 FP4 到 FP32，本质就是用多少位二进制数来表示一个浮点数。很显然，位数越多，浮点数越精确；而 FP4 精度能表示的浮点数则相当不精确，能表达的数字也比较少。
-
-但位数增多带来的是训练和推理时的显存消耗。对于现代动辄上百 B 甚至超过 1T 的大模型而言，从 FP4 -> FP8 -> BF16 -> FP32 所消耗的显存可以**近似**认为是翻倍的。高昂的成本让最初以 FP32 精度训练和推理的模型，逐渐开始降低浮点数精度来压低部署成本。
-
-低精度最常见的做法，是模型在高精度浮点数训练完以后，再把高精度浮点数压缩成低精度版本进行部署。目前 FP8 精度在训练和推理上都已经非常常见。
-
-但这种方法的问题在于：训练时模型活在高精度世界里，部署时突然被扔进低精度世界。高精度下没有表现出问题，并不代表低精度下也能同样成立，因此每压缩一步精度都会带来推理质量的劣化。
-
-DeepSeek V4 的思路是反过来：既然低精度是必然的，而且 V4 后续在全国大范围私有化部署低精度版本也是可以预期到的，那就让模型提前适应它，在后训练阶段就开始引入低精度，而不是训练完了再压缩。
-
-## 📊 精度流转图
-
-![FP4 QAT](./assets/image/fp4-qat-flow-preview.svg)
-
-## 🔧 工程理解
-
-V4 不是全部参数都做 FP4 量化，只在下面两类参数上使用 FP4：
-
-- MoE 专家权重参数：显存访问极为频繁的参数，也是 MoE 模型参数中的主力。
-- 第二章 `Architecture` 部分里 CSA 的 `indexer` 和 `qk path`。
-
-这里需要补充说明与 CSA 相关的内容。第二章里的 CSA，是将长程历史 KV entry 做一定比例的压缩，然后挑选最相关的历史 KV entry 块。这个挑选动作就是 `indexer` 的职责，而相关性评分则是 `indexer` 中 `qk path` 的职责。
-
-从工程上说，CSA 是为了节省推理过程中的 KV cache 消耗，减少全量 attention 扫描长历史带来的计算和内存带宽压力。但 CSA 这个过程，尤其是 indexer 本身，不能太耗资源，否则为了节省推理过程的消耗，反而在途中大幅增加消耗，就不值得了。
-
-### 精度分工一览
-
-| 场景 / 对象 | 精度 | 作用 |
-| --- | --- | --- |
-| Optimizer master weights | **FP32** | 保存高精度主参数，避免小更新被低精度吞掉 |
-| MoE expert weights 存储/部署目标 | **FP4** | 大幅降低 expert 权重显存和访存 |
-| MoE expert weights 训练计算承载 | **FP8** | FP4 解码后放入 FP8，复用已有 FP8 training framework |
-| MoE expert backward 梯度回传 | 梯度经 STE 回到 **FP32 master** | 量化不可导，用 STE 近似直通 |
-| 部署和采样中的 expert weights | **FP4** | 与线上部署一致，同时减少 memory loading |
-| CSA indexer / qk path | **FP4** | cache、load、multiply 都低精度，降低长上下文 indexer 成本 |
-| CSA index scores / Top-k selector | **BF16** | 分数本身用较高精度存储，提高路由质量 |
-| 某些普通训练/激活/累加路径 | BF16 / FP8 / FP32 混合 | 取决于 kernel 和数值稳定性需求 |
-| 其他 KV cache 维度，按前文报告描述 | **FP8** | 降低 KV cache 存储 |
-
-### FP32
-
-主要承担主版本权重和优化器状态的高精度维护。即使前向计算中使用了低精度量化权重，训练时仍需要一个高精度版本作为长期参数基准，用于累积梯度更新，避免低精度量化误差在多轮训练中持续放大。
-
-对 MoE expert 权重来说，DeepSeek V4 并不是直接在 FP4 权重上做长期更新，而是保留 FP32 主版本权重；每次模型在做前向计算时，再从 FP32 主版本权重量化到 FP4，进入后续计算路径。反向传播得到的梯度最终也会作用回 FP32 主版本权重。
-
-### FP4
-
-主要负责 MoE expert 权重，以及 CSA 的 `indexer + qk path`。
-
-### FP8
-
-FP8 是训练中的主要格式。基于 FP8 的训练框架和硬件能力较为成熟，DeepSeek 复用了这套框架。
-
-### BF16
-
-BF16 主要用于表达敏感的中间值，比如 CSA indexer 和 qk path 算出来的不同块相关性分数。这部分分数会保留较高精度，以提高块选择的质量。
-
----
-
-# 🏗️ 3.5 Training Framework：将算法创新纳入训练框架
+## 🏗️ 3.4 Training Framework：将算法创新纳入训练框架
 
 > 前置知识：第 2 章 `Architecture` 的所有内容
 
-这一节是第三章的一个汇总节点。前面几节讲的是单点基础设施，这一节开始回答一个更大的问题：当 Muon、mHC、CSA/HCA、FP4 QAT 这些创新同时出现时，训练框架如何承接它们。
+这一节是第三章的一个汇总节点。前面几节讲的是单点基础设施，这一节开始回答一个更大的问题：当 Muon、mHC、CSA/HCA 这些创新同时出现时，训练框架如何承接它们。
 
 ## 📌 问题背景
 
-DeepSeek V4 前面已经引入了很多非标准结构：Muon、mHC、CSA/HCA、FP4 QAT、复杂 kernel。
+DeepSeek V4 前面已经引入了很多非标准结构：Muon、mHC、CSA/HCA、复杂 kernel。
 
 算法上的创新、kernel 的重写，最终都还要在 GPU 上能高效训练，并接入现有的分布式训练框架。
 
@@ -316,15 +248,40 @@ DeepSeek V4 前面已经引入了很多非标准结构：Muon、mHC、CSA/HCA、
 
 ### Muon
 
-这一部分在 V4 技术报告原文中写得相当模糊。原文仅提到他们仍然会对矩阵做切割和拆分并进行分布式运算，切割方法被称为 `Hybrid ZeRO`，最后能获得很好的效果，但 <text underline="true">*具体是怎么做的、为什么效果好，原文没有做任何解释*</text>。
+Muon 的难点在于：它需要完整梯度矩阵来计算参数更新，而传统 ZeRO 更适合 AdamW 这类逐元素优化器。
 
-下面的部分是从 Kimi 于 2025.02 发表的论文《Muon is Scalable for LLM Training》提出的技术路径，并非原文披露，仅供参考。
+DeepSeek 为 Muon 设计了 hybrid ZeRO bucket assignment。核心处理包括：
 
+![Muon Hybrid ZeRO Bucket Assignment](./assets/image/muon-hybrid-zero-explainer.svg)
+
+可以先把问题想成一个仓库调度问题：每个权重矩阵都是一个不能随便拆开的货箱，ZeRO rank 是仓库货架。传统 AdamW 更像是散装零件，切成很多小块分别处理也容易成立；但 Muon 的 Newton-Schulz 正交化要保持矩阵的整体结构，所以 DeepSeek 不能只按元素平均切分，而是要重新设计“哪些矩阵放在哪个 rank 上”。
+
+对 dense 参数，DeepSeek 的思路是：限制参与 Muon 状态切分的 ZeRO 并行规模，然后用 knapsack algorithm 把完整参数矩阵分配给这些 rank，让每个 rank 管的矩阵总量尽量接近。分完以后，不同 rank 的 bucket 大小仍可能不完全一致，于是会 padding 到最大 bucket 尺寸，方便后续 reduce-scatter。这个 padding 会带来少量额外显存，但报告说在他们的设置里通常低于 10%。
+
+当整体 data parallelism 大于这个 ZeRO 上限时，DeepSeek 没有继续把矩阵切得更碎，而是在额外 data-parallel groups 中冗余计算 Muon update。也就是说，这里主动用更多计算换更少的 bucket memory，避免为了省计算把 Muon 需要的矩阵结构打碎。
+
+对 MoE 参数，DeepSeek 的处理又不一样。这里需要先理解一个 expert 里的 SwiGLU FFN 大致有三组矩阵：
+
+- **up projection**：把 hidden state 投到更宽的中间维度，提供候选特征。
+- **gate projection**：也投到中间维度，但它负责产生门控信号，决定哪些候选特征被放大或抑制。
+- **down projection**：把经过门控和激活后的中间表示投回 hidden size。
+
+可以非常粗略地写成：
+
+```plaintext
+candidate = up(x)
+gate = activation(gate(x))
+output = down(candidate * gate)
+```
+
+因为 expert 数量极多，DeepSeek 以 expert 为单位独立优化，并把所有层所有专家的 SwiGLU projection matrix 按逻辑顺序 flatten：先把所有 down projection matrix 排在一起，再排所有 up projection matrix，最后排所有 gate projection matrix。关键点是：分发时不切开逻辑上独立的矩阵。这样既能把大量 expert 参数摊到 rank 上，又不破坏单个矩阵做 Muon 更新时需要的结构。
+
+最后，DeepSeek 还做了两类工程优化：第一，形状相同的连续参数会自动合并，从而 batched 执行 Newton-Schulz 迭代，提高硬件利用率；第二，MoE 梯度在 data-parallel ranks 间同步时会随机舍入到 BF16，减少一半通信量，然后用 all-to-all 交换到本地后做 FP32 sum，避免低精度加法累积出更大的数值误差。
+
+在报告原文的参考文献里，引用了一篇 2025.02 kimi 团队的论文：Muon is Scalable for LLM Training （https://arxiv.org/abs/2502.16982） 。论文里的技术路径与 DeepSeek 的不同，放在这里做一个参考对比
 1. 仍然把惯性更新矩阵切片放在不同 rank 里。
 2. 但每个 rank 做 Newton-Schulz 正交化时，要通过 rank 间通信把所有 rank 之间的参数 gather 起来再算，也就是说算的时候仍然是全矩阵计算。
 3. 算完之后，每个 rank 只保留自己 rank 的 update，其余的全部丢掉。
-
-<text underline="true">*必须指出的是，这是 Kimi 在 2025.02 的成果，时间跨度已经较大。而且从 V4 报告中有限的陈述来看，DS 做的不是传统 ZeRO 切割，而是他们自定义的切割方式。也就是说，DS 的做法很可能和 Kimi 并不一样，这里只是一个参考。*</text>
 
 ### mHC
 
@@ -375,9 +332,9 @@ mHC 中提到，中间点 checkpoint 本身需要保留；但在 1M context 下�
 
 ---
 
-# 📦 3.6 Inference Framework：适配长上下文的推理缓存
+## 📦 3.5 Inference Framework：适配长上下文的推理缓存
 
-如果说 3.5 解决的是“怎么把创新结构训起来”，那么 3.6 解决的就是“怎么把这些结构稳定地服务出去”。重点落在 KV cache 的组织与命中率上。
+如果说 3.4 解决的是“怎么把创新结构训起来”，那么 3.5 解决的就是“怎么把这些结构稳定地服务出去”。重点落在 KV cache 的组织与命中率上。
 
 ## 📌 问题背景
 
@@ -403,4 +360,4 @@ DS 的方案在数学上听起来非常直接：
 2. 把滑动窗口 KV 和尾部状态统一打包成 `state cache`。对于这些 state cache，每次请求都分配一块固定大小的缓存 block。
 3. 除此之外的其他部分，仍然继续沿用传统的 KV cache 块。
 
-除了以上三点，DS 还引入了 `on-disk KV Cache storage` 的概念。也就是把系统提示词、MCP tool 连接信息、git 代码仓库等这类具有固定前缀的 KV Cache 直接落到磁盘；prefill 的时候直接激活磁盘中的这些 KV Cache，避免 agent 过程中这类高度重复前缀的重复计算。
+除了以上三点，DS 还引入了 `on-disk KV Cache storage` 的概念。粗略地类比到Agent系统中，就是把系统提示词、MCP tool 连接信息、git 代码仓库等这类具有固定前缀的 KV Cache 直接落到磁盘；prefill 的时候直接激活磁盘中的这些 KV Cache，避免 agent 过程中这类高度重复前缀的重复计算。

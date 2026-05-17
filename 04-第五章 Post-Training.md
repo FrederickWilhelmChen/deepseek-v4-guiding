@@ -25,7 +25,7 @@
 
 ---
 
-# 🧬 5.1 Post-Training Pipeline：后训练范式的变化
+## 🧬 5.1 Post-Training Pipeline：后训练范式的变化
 
 报告这一节中的逻辑组织有些分散，可以大致划分为两个部分：
 
@@ -96,9 +96,11 @@ V4 中，DS 引入了一种新的工具调用模式，该模式使用特殊的 `
 
 如果我们注意看非常著名也非常好用的 superpowers 的提示词撰写，里面也使用了 `<hard-gate></hard-gate>` 这样的 XML 模式组装，大大提高了 agent 使用 skill，并依据 skill 做事的指令跟随能力。
 
-同时 DS 用 `|DSML|` 这种特殊的标记来强化 tool call schema 的稳定性，可能隐含的是：我们使用 V4 模型在**某些使用非官方 tools 参数**的场景下，**使用 `|DSML|` 这个标记可能对 tool call 的稳定性和指令跟随有正向作用，因为模型和 tokenizer 在训练时就天然地更“认识”这样一个标记，并且做过大规模的指令对齐。**
+同时 DS 用 `|DSML|` 这种特殊的标记来强化 tool call schema 的稳定性
 
-这部分内容以个人推测为主，大家可以自行测试。
+> DS的这种处理可能隐含的是：我们使用 V4 模型在**某些使用非官方 tools 参数**的场景下，**使用 `|DSML|` 这个标记可能对 tool call 的稳定性和指令跟随有正向作用，因为模型和 tokenizer 在训练时就天然地更“认识”这样一个标记，并且做过大规模的指令对齐。**
+
+这部分内容以**个人推测**为主，大家可以自行测试。
 
 ---
 
@@ -284,7 +286,7 @@ GRM 的思路天生带有自增强效果。如果早期自评审过程没有做�
 
 ---
 
-# 🏗️ 5.2 RL and OPD Infrastructure：后训练框架
+## 🏗️ 5.2 RL and OPD Infrastructure：后训练框架
 
 > 从 5.1 到 5.2 的逻辑顺序，和第二章到第三章类似：先谈方法论，再谈工程落地。
 
@@ -292,15 +294,50 @@ GRM 的思路天生带有自增强效果。如果早期自评审过程没有做�
 
 ## 🔢 5.2.1 FP4 Quantization Integration：FP4 量化集成
 
+### 📌 问题背景
+
+这一节开始进入精度与成本之间的取舍问题。它关心的不是“低精度能不能做”，而是“如何把低精度真正纳入后训练体系，而不是只在部署阶段临时压缩”。
+
+从 FP4 到 FP32，本质就是用多少位二进制数来表示一个浮点数。很显然，位数越多，浮点数越精确；而 FP4 精度能表示的浮点数则相当不精确，能表达的数字也比较少。
+
+但位数增多带来的是训练和推理时的显存消耗。对于现代动辄上百 B 甚至超过 1T 的大模型而言，从 FP4 -> FP8 -> BF16 -> FP32 所消耗的显存可以**近似**认为是翻倍的。高昂的成本让最初以 FP32 精度训练和推理的模型，逐渐开始降低浮点数精度来压低部署成本。
+
+低精度最常见的做法，是模型在高精度浮点数训练完以后，再把高精度浮点数压缩成低精度版本进行部署。目前 FP8 精度在训练和推理上都已经非常常见。
+
+但这种方法的问题在于：训练时模型活在高精度世界里，部署时突然被扔进低精度世界。高精度下没有表现出问题，并不代表低精度下也能同样成立，因此每压缩一步精度都会带来推理质量的劣化。
+
+DeepSeek V4 的思路是反过来：既然低精度是部署和采样阶段必须面对的现实约束，那就在后训练阶段引入 QAT，让模型提前适应这类精度退化，而不是训练完了再临时压缩。
+
+![FP4 QAT](./assets/image/fp4-qat-flow-preview.svg)
+
+V4 不是全部参数都做 FP4 量化，只在下面两类对象上使用 FP4：
+
+- MoE 专家权重参数：显存访问极为频繁的参数，也是 MoE 模型参数中的主力。
+- CSA indexer 的 Query-Key path：QK activations 会以 FP4 形式 cache、load 和 multiply，以降低长上下文 indexer 成本。
+
+这里需要补充说明与 CSA 相关的内容。第二章里的 CSA，是将长程历史 KV entry 做一定比例的压缩，然后挑选最相关的历史 KV entry 块。这个挑选动作就是 `indexer` 的职责，而相关性评分则是 `indexer` 中 `qk path` 的职责。
+
+从工程上说，CSA 是为了节省推理过程中的 KV cache 消耗，减少全量 attention 扫描长历史带来的计算和内存带宽压力。但 CSA 这个过程，尤其是 indexer 本身，不能太耗资源，否则为了节省推理过程的消耗，反而在途中大幅增加消耗，就不值得了。
+
+| 场景 / 对象 | 精度 | 作用 |
+| --- | --- | --- |
+| Optimizer master weights | **FP32** | 保存高精度主参数，避免小更新被低精度吞掉 |
+| MoE expert weights 存储/部署目标 | **FP4** | 大幅降低 expert 权重显存和访存 |
+| MoE expert weights 训练计算承载 | **FP8** | FP4 解码后放入 FP8，复用已有 FP8 training framework |
+| MoE expert backward 梯度回传 | 梯度经 STE 回到 **FP32 master** | 量化不可导，用 STE 近似直通 |
+| 部署和采样中的 expert weights | **FP4** | 与线上部署一致，同时减少 memory loading |
+| CSA indexer / QK path | **FP4** | cache、load、multiply 都低精度，降低长上下文 indexer 成本 |
+| CSA index scores / Top-k selector | **BF16** | index scores 从 FP32 量化到 BF16，提高 top-k selector 速度，同时保持较高 KV entry recall |
+| 某些普通训练/激活/累加路径 | BF16 / FP8 / FP32 混合 | 取决于 kernel 和数值稳定性需求 |
+| 其他 KV cache 维度，按第二章效率讨论描述 | BF16 / FP8 混合 | RoPE 维度使用 BF16，其余维度使用 FP8 |
+
 ### 📌 报告做法
 
-第三章已经详细提及了 FP4 量化在整个框架中的作用，以及多种类型的精度在不同层之间的流转。
-
-在后训练这里，报告原文明确说：后训练阶段所有 rollout 轨迹的生成，也就是仅推理阶段，全部采用 FP4 量化。这里的 rollout 不仅包括专家教师模型，也包括基模。
+在后训练这里，报告原文明确说：后训练阶段 rollout 轨迹的生成，也就是不涉及反向传播的推理和 rollout 阶段，直接使用原生 FP4 quantized weights。这里的 QAT 适用于模型、teacher 和 reference models 对量化精度退化的适应。
 
 这说明 DS 在后训练阶段进一步强化了 FP4 低精度使用。后训练阶段本身就是让模型更加适应真实环境和现实任务的过程，因此 rollout 阶段使用 FP4，也是在让模型更早适应未来部署形态。
 
-对于反向传播，也如第三章所说，使用无损的 FP4 到 FP8 反量化来模拟，无缝使用成熟的 FP8 混合精度框架。
+对于反向传播，MoE expert weights 的 FP32 master weights 会先量化到 FP4，再无损 dequantize 回 FP8 用于计算，梯度通过 STE 回传到 FP32 master weights，从而复用成熟的 FP8 mixed precision training framework。
 
 ### 🔧 工程理解
 
@@ -512,7 +549,7 @@ DSec 由三个 Rust 组件组成：
 
 ---
 
-# 📊 5.3 + 5.4 Evaluation：Benchmark 与真实世界评测
+## 📊 5.3 + 5.4 Evaluation：Benchmark 与真实世界评测
 
 一个模型发布之后，大家往往喜欢直接看参数量和 benchmark 分数，判断这个模型是不是很强。
 
@@ -647,7 +684,7 @@ DS 坦率承认，V4-Pro Max Thinking 仍然存在以下不足：
 
 ---
 
-# 🔭 Final Discussion：限制和未来展望
+## 🔭 Final Discussion：限制和未来展望
 
 在全文小结部分，DS 提出了当前的几个限制，以及未来的一些展望。
 
@@ -695,7 +732,7 @@ DS 明确继续押注长周期、多轮、工具化、状态化 agent 任务。
 
 ---
 
-# ✅ 本章总结
+## ✅ 本章总结
 
 可以看到 DS 在这一章中的阐述已经展示了一个趋势，就是大家都已经把 Agent 能力、长程能力、工具调用能力、环境交互能力，作为大模型后训练的核心目标了。后训练不再是单纯的“给模型更多偏好数据”，而是一个围绕真实 Agent runtime 构建完整训练系统的过程。
 

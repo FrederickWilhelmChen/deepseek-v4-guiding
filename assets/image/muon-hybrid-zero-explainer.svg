@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M1,1 L9,5 L1,9 Z" fill="#334155"/>
+    </marker>
+    <style>
+      .title { font: 700 34px -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; fill: #0f172a; }
+      .sub { font: 400 19px -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; fill: #475569; }
+      .h { font: 700 22px -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; fill: #0f172a; }
+      .t { font: 500 17px -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; fill: #334155; }
+      .small { font: 500 14px -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; fill: #475569; }
+      .label { font: 700 15px -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; fill: #0f172a; }
+      .card { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.4; rx: 14; }
+      .blue { fill: #dbeafe; stroke: #2563eb; stroke-width: 1.5; rx: 8; }
+      .green { fill: #dcfce7; stroke: #16a34a; stroke-width: 1.5; rx: 8; }
+      .orange { fill: #ffedd5; stroke: #ea580c; stroke-width: 1.5; rx: 8; }
+      .red { fill: #fee2e2; stroke: #dc2626; stroke-width: 1.5; rx: 8; }
+      .yellow { fill: #fef9c3; stroke: #ca8a04; stroke-width: 1.4; rx: 10; }
+      .rank { fill: #f8fafc; stroke: #64748b; stroke-width: 1.2; rx: 10; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="720" fill="#f8fafc"/>
+  <text x="600" y="46" text-anchor="middle" class="title">报告 3.4.1：Muon 的 Hybrid ZeRO 怎么分参数</text>
+  <text x="600" y="78" text-anchor="middle" class="sub">目标不是解释 Muon 算法本身，而是解释 DeepSeek 如何把 Muon 放进分布式训练框架</text>
+
+  <rect x="40" y="115" width="330" height="245" class="card"/>
+  <text x="66" y="150" class="h">A. Dense 参数</text>
+  <text x="66" y="181" class="t">把完整矩阵分给有限 ZeRO ranks</text>
+  <rect x="72" y="210" width="70" height="44" class="blue"/>
+  <text x="107" y="237" text-anchor="middle" class="label">W1</text>
+  <rect x="154" y="210" width="70" height="44" class="blue"/>
+  <text x="189" y="237" text-anchor="middle" class="label">W2</text>
+  <rect x="236" y="210" width="70" height="44" class="blue"/>
+  <text x="271" y="237" text-anchor="middle" class="label">W3</text>
+  <path d="M190 268 L190 302" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="72" y="315" width="115" height="28" class="rank"/>
+  <text x="130" y="334" text-anchor="middle" class="small">rank 0</text>
+  <rect x="201" y="315" width="115" height="28" class="rank"/>
+  <text x="259" y="334" text-anchor="middle" class="small">rank 1</text>
+
+  <rect x="435" y="115" width="330" height="245" class="card"/>
+  <text x="461" y="150" class="h">B. Bucket 对齐</text>
+  <text x="461" y="181" class="t">不同 rank 的 bucket 需要 padding</text>
+  <rect x="465" y="214" width="210" height="38" class="rank"/>
+  <rect x="465" y="214" width="145" height="38" class="blue"/>
+  <rect x="610" y="214" width="65" height="38" class="red"/>
+  <text x="490" y="238" class="small">rank 0 load</text>
+  <text x="624" y="238" class="small">pad</text>
+  <rect x="465" y="272" width="210" height="38" class="rank"/>
+  <rect x="465" y="272" width="190" height="38" class="blue"/>
+  <rect x="655" y="272" width="20" height="38" class="red"/>
+  <text x="490" y="296" class="small">rank 1 load</text>
+  <text x="461" y="337" class="small">原文：padding overhead 通常低于 10%</text>
+
+  <rect x="830" y="115" width="330" height="245" class="card"/>
+  <text x="856" y="150" class="h">C. DP 超过 ZeRO 上限</text>
+  <text x="856" y="181" class="t">不继续切碎矩阵，改为冗余计算</text>
+  <rect x="870" y="220" width="105" height="52" class="orange"/>
+  <text x="923" y="242" text-anchor="middle" class="small">DP group</text>
+  <text x="923" y="260" text-anchor="middle" class="small">A</text>
+  <rect x="1010" y="220" width="105" height="52" class="orange"/>
+  <text x="1063" y="242" text-anchor="middle" class="small">DP group</text>
+  <text x="1063" y="260" text-anchor="middle" class="small">B</text>
+  <text x="856" y="320" class="small">用重复算 Muon update 换更低 bucket memory</text>
+
+  <rect x="40" y="405" width="1120" height="220" class="card"/>
+  <text x="66" y="442" class="h">D. MoE 参数：先理解一个 expert 的 SwiGLU 有三组矩阵</text>
+  <text x="66" y="474" class="t">up projection：升维；gate projection：算门控；down projection：降回 hidden size。</text>
+
+  <rect x="70" y="505" width="120" height="48" class="green"/>
+  <text x="130" y="535" text-anchor="middle" class="label">up</text>
+  <rect x="210" y="505" width="120" height="48" class="orange"/>
+  <text x="270" y="535" text-anchor="middle" class="label">gate</text>
+  <rect x="350" y="505" width="120" height="48" class="blue"/>
+  <text x="410" y="535" text-anchor="middle" class="label">down</text>
+  <text x="78" y="585" class="small">一个 expert 内部的 FFN 大致是：down( activation(gate(x)) * up(x) )</text>
+
+  <path d="M500 530 L560 530" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="585" y="510" class="t">DeepSeek flatten 顺序</text>
+  <rect x="585" y="525" width="145" height="34" class="blue"/>
+  <text x="658" y="547" text-anchor="middle" class="small">all down matrices</text>
+  <rect x="742" y="525" width="125" height="34" class="green"/>
+  <text x="805" y="547" text-anchor="middle" class="small">all up matrices</text>
+  <rect x="879" y="525" width="135" height="34" class="orange"/>
+  <text x="947" y="547" text-anchor="middle" class="small">all gate matrices</text>
+  <rect x="1026" y="525" width="82" height="34" class="red"/>
+  <text x="1067" y="547" text-anchor="middle" class="small">padding</text>
+  <text x="585" y="586" class="small">关键：不切开单个逻辑矩阵；同形状连续矩阵可 batch 执行 Newton-Schulz。</text>
+
+  <rect x="40" y="650" width="1120" height="44" class="yellow"/>
+  <text x="600" y="678" text-anchor="middle" class="h">一句话：Dense 参数按完整矩阵装桶；MoE 参数按 expert 的 down / up / gate 矩阵整理成大序列。</text>
+</svg>

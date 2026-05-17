@@ -19,7 +19,7 @@
 
 ---
 
-# 1️⃣ Data Construction：预训练数据选择和组织
+## 1️⃣ Data Construction：预训练数据选择和组织
 
 DeepSeek 在 V3 预训练数据基础上，构造了一个更多样、更高质量、有效上下文更长的数据集。
 
@@ -42,7 +42,7 @@ DeepSeek 在 V3 预训练数据基础上，构造了一个更多样、更高质�
 
 这已经成为当前模型厂商的共识：
 
-> 模型自己生成生成的大量模板化内容，会污染到模型自己的后续训练，必须做专项清洗。否则它会不停的学自己生成的质量参差不齐的内容，最后导致模型能力崩溃。
+> 模型自己生成的大量模板化内容，会污染到模型自己的后续训练，必须做专项清洗。否则它会不停地学自己生成的质量参差不齐的内容，最后导致模型能力崩溃。
 
 ---
 
@@ -66,7 +66,7 @@ DeepSeek 更重视这些语料：
 
 所以，从训练质量看，原生长文本当然更好；但从数据规模看，拼接 packing 仍然是广泛采用的工程手段。
 
-> 需要注意的是，多段短文本拼接会引入额外的的问题，这部分问题在后续 Sample-level Attention Mask 里会提到。
+> 需要注意的是，多段短文本拼接会引入额外的问题，这部分问题在后续 Sample-level Attention Mask 里会提到。
 
 ---
 
@@ -98,7 +98,7 @@ FIM 非常匹配 coding 场景。
 
 这比单纯“从左到右续写”更符合代码编辑任务。
 
-还是拿java的例子来距离说：
+还是拿 Java 的例子来举例说：
 
 ```java
 /**
@@ -118,7 +118,7 @@ void updateCorpHotelOrderData(XXXXBO xxxBO) {
 
 /**
  * 现在需要在把response数据组装更新到数据库里这一步之前，插入一段新的逻辑：查另一个接口B，把B的response也拿进来组装DTO
- * /
+ */
 void updateCorpHotelOrderData(XXXXBO xxxBO) {
     // 组装request
     XXXRequestType request = buildXXXRequest(xxxBO);
@@ -126,7 +126,7 @@ void updateCorpHotelOrderData(XXXXBO xxxBO) {
     // 调用soa接口，得到了response
     XXXResponseType response = callXXXService(request);
     
-    // -> 这里就需要LLM插一段逻辑进来，它既需要知道上文已经有了哪些BO和reponse，也要知道下文用哪些BO或者response来组装DTO
+    // -> 这里就需要 LLM 插一段逻辑进来，它既需要知道上文已经有了哪些 BO 和 response，也要知道下文用哪些 BO 或者 response 来组装 DTO
     // LLM也同时还要看是不是需要把下文的代码也给改了才行，比如buildXXXDTO方法里可能也需要把B的response作为输入参数加进来。
     
     // 把response 里的数据组装更新到数据库里
@@ -158,7 +158,7 @@ Sample-level attention mask 进一步解决的是：
 
 ---
 
-# 2️⃣ Model Setups：Flash 和 Pro 的规模差异
+## 2️⃣ Model Setups：Flash 和 Pro 的规模差异
 
 DeepSeek V4 发布了 Flash 和 Pro 两个版本。
 
@@ -207,7 +207,7 @@ MoE：1 个 shared expert + 384 个 routed experts
 
 ---
 
-# 3️⃣ Training Setups：训练节奏
+## 3️⃣ Training Setups：训练节奏
 
 报告原文把这部分放在 4.2 Model Setups 下面，主要讲三件事。
 
@@ -256,7 +256,7 @@ Pro 与 Flash 类似，但 dense attention 阶段更长。
 
 ---
 
-# 4️⃣ Mitigating Training Instability：训练稳定性问题
+## 4️⃣ Mitigating Training Instability：训练稳定性问题
 
 DeepSeek 在报告中提到，训练过程中遇到了 **loss spike** 问题。 回滚可以暂时恢复，但不能阻止 spike 再次发生。
 
@@ -328,7 +328,7 @@ flowchart TD
 
 既然这些异常值可能污染后续计算，那直接限幅是一个非常工程化的处理方式。
 
-报告原文中设置阈值为 **10**：超过阈值的值直接截断。
+报告原文中设置阈值为 **[-10, 10]**：超过阈值的值直接截断。
 
 这样即使中间变量偶发异常，也会被截断在可控范围内，降低异常值扩散并诱发 loss spike 的概率。
 
@@ -345,7 +345,7 @@ flowchart TD
 
 ---
 
-# 5️⃣ Evaluations：Base Model Benchmark
+## 5️⃣ Evaluations：Base Model Benchmark
 
 本节主要是对预训练基模的评测结果。
 
