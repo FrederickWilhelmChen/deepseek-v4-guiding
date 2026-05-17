@@ -667,6 +667,14 @@ DS 坦率承认，V4-Pro Max Thinking 仍然存在以下不足：
 
 除了 MoE 和稀疏注意力，未来 DS 还会探索新的稀疏维度，比如 “more sparse embedding modules”，以进一步提升计算和内存效率，同时不牺牲能力。
 
+在这个部分，实际上 DS 在 2026.01 发表了论文：Conditional Memory via Scalable Lookup: A New Axis of Sparsity for Large Language Models (https://arxiv.org/abs/2601.07372)，这篇论文讲了他们的 Engram （https://github.com/deepseek-ai/Engram） 方向是稀疏查表静态记忆
+
+> DS 的判断是，很多固定实体、局部搭配、公式化语言模式，本来可以查表解决，却被迫用 attention + FFN 在早期层里算出来。 
+
+他们提出的 conditional memory 就是把这类静态知识交给一个大规模 N-gram embedding table，通过确定性哈希 O(1) 查表来激活少量 memory rows
+
+Engram 已经训练出了 27B 的模型，并发现在代码和数学上均有提升，长上下文上也有明显收益
+
 ## 4️⃣ 继续优化低延迟长上下文吞吐
 
 V4 的很多设计都是围绕 1M context 展开的，但长上下文真正好用，不只是能放下 1M token，还要有低延迟、高吞吐和可承受成本。

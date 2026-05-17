@@ -16,7 +16,7 @@ def print_stats(name: str, matrix: np.ndarray, output: np.ndarray) -> None:
 
 def sinkhorn_to_doubly_stochastic(
     matrix: np.ndarray,
-    steps: int = 30,
+    steps: int = 20,
     eps: float = 1e-12,
 ) -> np.ndarray:
     """
@@ -30,6 +30,8 @@ def sinkhorn_to_doubly_stochastic(
     - 每一行的和约等于 1；
     - 每一列的和约等于 1；
     - 所有元素非负。
+
+    steps 取 20，直接使用了 config.json 中的配置
 
     注意：
     这不是 DeepSeek V4 中 mHC 的完整实现。
