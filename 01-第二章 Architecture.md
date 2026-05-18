@@ -23,13 +23,6 @@ DeepSeek V4 在 Architecture 层面主要做了四件事：
 
 > 前置知识：MoE 的基本概念
 
-2.1. 从 DeepSeek-V3 专家混合设计继承的设计。
-与之前的 DeepSeek 系列模型（DeepSeek-AI, 2024；DeepSeek-AI, 2024）一样，DeepSeek-V4 系列也对前馈网络（FFNs）采用 DeepSeekMoE 范式（Dai 等人, 2024）， 该范式设置了细粒度路由专家和共享专家。
-与 DeepSeek-V3 不同，我们将计算亲和分数的激活函数从 Sigmoid(·) 改为 Sqrt(Softplus(·))。
-为了负载平衡，我们还采用了无辅助损失策略（DeepSeek-AI, 2024；Wang 等人, 2024a），并辅以轻微的按序列平衡损失， 以防止单个序列内的极端不平衡。
-对于 DeepSeek-V4，我们移除了路由目标节点数量的约束，并仔细重新设计了并行策略以维持训练效率。
-此外，相比 DeepSeek-V3，我们用采用 Hash 路由（Roller 等人, 2021）的 MoE 层替换了前几个 Transformer 块中的密集 FFN 层。Hash 路由策略根据输入 token ID 的预定义哈希函数确定每个 token 的目标专家。多 token 预测。与 DeepSeek-V3 一样，DeepSeek-V4 系列也设置了 MTP 模块和目标。鉴于 MTP 策略已在 DeepSeek-V3 中验证，我们在 DeepSeek-V4 系列中采用相同策略，未做修改。
-
 ## 🧩 从 V3 MoE 延续下来的设计
 
 V4 延续了之前 V3 中 MoE 的核心设计：使用细粒度专家和共享专家；
