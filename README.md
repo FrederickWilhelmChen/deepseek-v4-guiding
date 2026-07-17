@@ -29,6 +29,7 @@
 | [03-第四章 Pre-Training.md](./03-%E7%AC%AC%E5%9B%9B%E7%AB%A0%20Pre-Training.md) | 数据构造、Flash / Pro 规模差异、训练节奏、训练稳定性和 base model 评测 |
 | [04-第五章 Post-Training.md](./04-%E7%AC%AC%E4%BA%94%E7%AB%A0%20Post-Training.md) | 后训练 pipeline、GRM、OPD、FP4 QAT、RL 基础设施、Agent / coding / tool use 评测 |
 | [05-GLM-5 SAO 与 DeepSeek V4 后训练路线对比.md](./05-GLM-5%20SAO%20%E4%B8%8E%20DeepSeek%20V4%20%E5%90%8E%E8%AE%AD%E7%BB%83%E8%B7%AF%E7%BA%BF%E5%AF%B9%E6%AF%94.md) | GLM-5 SAO、CompactionRL、single-rollout PPO，以及与 DeepSeek V4 专家 GRPO / OPD 路线的对比 |
+| [06-Kimi K3 已披露技术导读.md](./06-Kimi%20K3%20%E5%B7%B2%E6%8A%AB%E9%9C%B2%E6%8A%80%E6%9C%AF%E5%AF%BC%E8%AF%BB.md) | KDA、Attention Residuals、Stable LatentMoE、Quantile Balancing、Per-Head Muon、FP4 QAT，以及与 DeepSeek V4 的系统对照 |
 | [模型参数配置表与导读的对照关系.md](./%E6%A8%A1%E5%9E%8B%E5%8F%82%E6%95%B0%E9%85%8D%E7%BD%AE%E8%A1%A8%E4%B8%8E%E5%AF%BC%E8%AF%BB%E7%9A%84%E5%AF%B9%E7%85%A7%E5%85%B3%E7%B3%BB.md) | 将 `config.json` 中的关键字段映射到导读中的概念 |
 
 也可以按兴趣选择入口：
@@ -40,6 +41,7 @@
 | 预训练组织方式 | 第 4 章 Pre-Training |
 | 后训练、Agent、工具调用 | 第 5 章 Post-Training |
 | GLM SAO、异步 Agent RL、与 DeepSeek V4 后训练对比 | 第 5 章补充：GLM-5 SAO 对比解读 |
+| Kimi K3、KDA、AttnRes、超稀疏 MoE 与 V4 架构对照 | Kimi K3 已披露技术导读 |
 | 只想理解 DeepSeek V4 对 Agent 的影响 | 先读总览，再重点读第 5.1 节 |
 
 ## 仓库结构
@@ -53,6 +55,7 @@
 ├── 03-第四章 Pre-Training.md
 ├── 04-第五章 Post-Training.md
 ├── 05-GLM-5 SAO 与 DeepSeek V4 后训练路线对比.md
+├── 06-Kimi K3 已披露技术导读.md
 ├── 模型参数配置表与导读的对照关系.md
 ├── assets/
 │   └── image/
@@ -89,10 +92,11 @@ pip install -r requirements.txt
 - Hugging Face 模型仓库：[deepseek-ai/DeepSeek-V4-Flash](https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash)
 - Hugging Face 模型仓库：[deepseek-ai/DeepSeek-V4-Pro](https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro)
 - Hugging Face 技术报告 PDF：[DeepSeek_V4.pdf](https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro/blob/main/DeepSeek_V4.pdf)
+- Kimi K3 官方技术博客：[Kimi K3: Open Frontier Intelligence](https://www.kimi.com/blog/kimi-k3)
 
 ## 免责声明
 
 - 本项目包含大量个人主观理解和工程化解释，不能替代英文技术报告原文。
 - 为了可读性，部分数学过程、训练细节和系统实现做了简化。
-- 如果导读内容与原文存在歧义，应以 DeepSeek AI 发布的英文技术报告为准。
+- 如果导读内容与原文存在歧义，应以 DeepSeek AI 或对应模型团队发布的英文技术材料为准。
 - 本项目不讨论模型能力排名，也不提供 DeepSeek V4 接入具体 coding agent 的教程。
