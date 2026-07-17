@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="1200" height="720">
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#596579"/></marker>
+    <filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#1f2937" flood-opacity=".12"/></filter>
+  </defs>
+  <rect width="1200" height="720" rx="28" fill="#f8fafc"/>
+  <text x="60" y="62" font-family="system-ui,'Microsoft YaHei'" font-size="32" font-weight="700" fill="#172033">KDA：一块固定大小、分区擦写的白板</text>
+  <text x="60" y="98" font-family="system-ui,'Microsoft YaHei'" font-size="17" fill="#596579">历史不再保存成一排独立卡片，而是持续写进同一张状态矩阵</text>
+  <rect x="70" y="150" width="570" height="410" rx="24" fill="#fff" stroke="#cbd5e1" stroke-width="3" filter="url(#s)"/>
+  <text x="355" y="188" text-anchor="middle" font-family="system-ui,'Microsoft YaHei'" font-size="21" font-weight="700" fill="#172033">状态白板 S</text>
+  <rect x="110" y="220" width="490" height="78" rx="14" fill="#e8f1ff" stroke="#2878ff" stroke-width="2"/>
+  <text x="135" y="250" font-family="system-ui,'Microsoft YaHei'" font-size="17" font-weight="700" fill="#2878ff">长期区 α≈1</text><text x="135" y="277" font-family="system-ui,'Microsoft YaHei'" font-size="15" fill="#596579">项目目标、长期约束：擦得很慢</text>
+  <rect x="110" y="320" width="490" height="78" rx="14" fill="#fff2d8" stroke="#e59a18" stroke-width="2" opacity=".9"/>
+  <text x="135" y="350" font-family="system-ui,'Microsoft YaHei'" font-size="17" font-weight="700" fill="#c77d08">中期区 0&lt;α&lt;1</text><text x="135" y="377" font-family="system-ui,'Microsoft YaHei'" font-size="15" fill="#596579">近期计划、局部状态：逐步变淡</text>
+  <rect x="110" y="420" width="490" height="78" rx="14" fill="#f2eaff" stroke="#7c5ce7" stroke-width="2" opacity=".65"/>
+  <text x="135" y="450" font-family="system-ui,'Microsoft YaHei'" font-size="17" font-weight="700" fill="#6d5ce7">快速区 α≈0</text><text x="135" y="477" font-family="system-ui,'Microsoft YaHei'" font-size="15" fill="#596579">过时细节、干扰信息：快速擦除</text>
+  <rect x="700" y="145" width="430" height="92" rx="18" fill="#e7f0ff" stroke="#2878ff" stroke-width="2"/><text x="915" y="180" text-anchor="middle" font-family="system-ui,'Microsoft YaHei'" font-size="18" font-weight="700" fill="#2878ff">1. 先整体按通道衰减</text><text x="915" y="210" text-anchor="middle" font-family="system-ui,'Microsoft YaHei'" font-size="15" fill="#596579">Diag(α) 决定白板各分区保留多少</text>
+  <line x1="915" y1="237" x2="915" y2="270" stroke="#596579" stroke-width="3" marker-end="url(#a)"/>
+  <rect x="700" y="270" width="430" height="92" rx="18" fill="#e4f7ef" stroke="#1f9d70" stroke-width="2"/><text x="915" y="305" text-anchor="middle" font-family="system-ui,'Microsoft YaHei'" font-size="18" font-weight="700" fill="#1f9d70">2. 用当前 Key 读取旧答案</text><text x="915" y="335" text-anchor="middle" font-family="system-ui,'Microsoft YaHei'" font-size="15" fill="#596579">先看白板目前认为 k 应该对应什么 v̂</text>
+  <line x1="915" y1="362" x2="915" y2="395" stroke="#596579" stroke-width="3" marker-end="url(#a)"/>
+  <rect x="700" y="395" width="430" height="92" rx="18" fill="#fff2d8" stroke="#e59a18" stroke-width="2"/><text x="915" y="430" text-anchor="middle" font-family="system-ui,'Microsoft YaHei'" font-size="18" font-weight="700" fill="#c77d08">3. 擦掉错误部分</text><text x="915" y="460" text-anchor="middle" font-family="system-ui,'Microsoft YaHei'" font-size="15" fill="#596579">沿 k 的方向减去旧预测 βk v̂ᵀ</text>
+  <line x1="915" y1="487" x2="915" y2="520" stroke="#596579" stroke-width="3" marker-end="url(#a)"/>
+  <rect x="700" y="520" width="430" height="92" rx="18" fill="#f2eaff" stroke="#7c5ce7" stroke-width="2"/><text x="915" y="555" text-anchor="middle" font-family="system-ui,'Microsoft YaHei'" font-size="18" font-weight="700" fill="#6d5ce7">4. 写入修正后的关联</text><text x="915" y="585" text-anchor="middle" font-family="system-ui,'Microsoft YaHei'" font-size="15" fill="#596579">写入的是误差 βk(v-v̂)ᵀ，而非盲目叠加</text>
+  <rect x="80" y="615" width="1050" height="64" rx="16" fill="#fff" stroke="#ef4444" stroke-width="2"/><text x="605" y="643" text-anchor="middle" font-family="system-ui,'Microsoft YaHei'" font-size="17" font-weight="700" fill="#b91c1c">类比边界：KDA 不能按地址删除“第 28471 个 Token”</text><text x="605" y="667" text-anchor="middle" font-family="system-ui,'Microsoft YaHei'" font-size="14" fill="#596579">它精细的是状态通道的连续衰减，不是历史条目的独立寻址</text>
+</svg>
