@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="1200" height="720">
+  <defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#596579"/></marker></defs>
+  <rect width="1200" height="720" rx="28" fill="#f8fafc"/>
+  <text x="60" y="62" font-family="system-ui,'Microsoft YaHei'" font-size="32" font-weight="700" fill="#172033">Stable LatentMoE：先把“大包裹”标准化，再送进专家工坊</text>
+  <text x="60" y="98" font-family="system-ui,'Microsoft YaHei'" font-size="17" fill="#596579">关键不是简单少算几个 Expert，而是降低 Expert 计算与通信所在的表示维度</text>
+  <rect x="60" y="180" width="230" height="230" rx="24" fill="#fff" stroke="#2878ff" stroke-width="3"/>
+  <rect x="115" y="235" width="120" height="110" rx="12" fill="#e7f0ff" stroke="#2878ff" stroke-width="3"/><line x1="115" y1="270" x2="235" y2="270" stroke="#2878ff" stroke-width="3"/><line x1="175" y1="235" x2="175" y2="345" stroke="#2878ff" stroke-width="3"/>
+  <text x="175" y="385" text-anchor="middle" font-family="system-ui,'Microsoft YaHei'" font-size="18" font-weight="700" fill="#2878ff">原始 Hidden State</text><text x="175" y="415" text-anchor="middle" font-family="system-ui,'Microsoft YaHei'" font-size="15" fill="#596579">体积大、维度高</text>
+  <line x1="290" y1="295" x2="400" y2="295" stroke="#596579" stroke-width="4" marker-end="url(#a)"/>
+  <rect x="400" y="190" width="230" height="210" rx="24" fill="#fff" stroke="#7c5ce7" stroke-width="3"/>
+  <text x="515" y="230" text-anchor="middle" font-family="system-ui,'Microsoft YaHei'" font-size="19" font-weight="700" fill="#6d5ce7">Down Projection</text>
+  <rect x="470" y="260" width="90" height="75" rx="10" fill="#f2eaff" stroke="#7c5ce7" stroke-width="3"/><text x="515" y="365" text-anchor="middle" font-family="system-ui,'Microsoft YaHei'" font-size="16" fill="#596579">压成 latent 包裹</text>
+  <line x1="630" y1="295" x2="720" y2="295" stroke="#596579" stroke-width="4" marker-end="url(#a)"/>
+  <rect x="720" y="145" width="420" height="360" rx="24" fill="#fff" stroke="#1f9d70" stroke-width="3"/>
+  <text x="930" y="185" text-anchor="middle" font-family="system-ui,'Microsoft YaHei'" font-size="22" font-weight="700" fill="#1f9d70">896 个专家工坊，Token 只进 16 个</text>
+  <g font-family="system-ui,'Microsoft YaHei'" font-size="15" text-anchor="middle" font-weight="700"><rect x="770" y="230" width="120" height="72" rx="12" fill="#e4f7ef" stroke="#1f9d70" stroke-width="2"/><text x="830" y="273" fill="#1f9d70">Expert A</text><rect x="915" y="230" width="120" height="72" rx="12" fill="#e4f7ef" stroke="#1f9d70" stroke-width="2"/><text x="975" y="273" fill="#1f9d70">Expert B</text><rect x="770" y="330" width="120" height="72" rx="12" fill="#fff2d8" stroke="#e59a18" stroke-width="2"/><text x="830" y="373" fill="#c77d08">Expert ...</text><rect x="915" y="330" width="120" height="72" rx="12" fill="#f2eaff" stroke="#7c5ce7" stroke-width="2"/><text x="975" y="373" fill="#6d5ce7">Expert 896</text></g>
+  <text x="930" y="455" text-anchor="middle" font-family="system-ui,'Microsoft YaHei'" font-size="15" fill="#596579">小包裹降低 All-to-All 与 Expert FFN 的压力</text>
+  <line x1="930" y1="505" x2="930" y2="555" stroke="#596579" stroke-width="4" marker-end="url(#a)"/>
+  <rect x="700" y="555" width="460" height="82" rx="18" fill="#e7f0ff" stroke="#2878ff" stroke-width="2"/><text x="930" y="588" text-anchor="middle" font-family="system-ui,'Microsoft YaHei'" font-size="18" font-weight="700" fill="#2878ff">聚合 + Up Projection</text><text x="930" y="616" text-anchor="middle" font-family="system-ui,'Microsoft YaHei'" font-size="15" fill="#596579">把专家结果恢复到原始 Hidden Dimension</text>
+  <rect x="70" y="540" width="560" height="105" rx="18" fill="#fff" stroke="#ef4444" stroke-width="2"/><text x="350" y="575" text-anchor="middle" font-family="system-ui,'Microsoft YaHei'" font-size="17" font-weight="700" fill="#b91c1c">类比边界</text><text x="350" y="603" text-anchor="middle" font-family="system-ui,'Microsoft YaHei'" font-size="14" fill="#596579">Stable 具体稳定了初始化、路由、归一化还是通信，</text><text x="350" y="626" text-anchor="middle" font-family="system-ui,'Microsoft YaHei'" font-size="14" fill="#596579">K3 当前尚未披露，不能直接照搬公开 LatentMoE 细节</text>
+</svg>
