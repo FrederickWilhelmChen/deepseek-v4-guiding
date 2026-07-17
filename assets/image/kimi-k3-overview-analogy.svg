@@ -1,47 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="1200" height="720">
-    <defs>
-      <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
-        <path d="M0,0 L10,5 L0,10 z" fill="#5B6475"/>
-      </marker>
-      <marker id="arrow-purple" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
-        <path d="M0,0 L10,5 L0,10 z" fill="#6D5CE7"/>
-      </marker>
-      <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-        <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#22304A" flood-opacity="0.10"/>
-      </filter>
-    </defs>
-    <rect width="1200" height="720" rx="28" fill="#F8FAFC"/>
-    <text x="60" y="66" font-family="Inter, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif" font-size="32" font-weight="700" fill="#172033">Kimi K3：一座为超长任务设计的“智能园区”</text>
-    <text x="60" y="100" font-family="Inter, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif" font-size="17" fill="#5B6475">类比只解释各模块分工；真实模型仍是重复堆叠的 Transformer / MoE 层</text>
-    <line x1="60" y1="124" x2="1140" y2="124" stroke="#D7DDE8" stroke-width="2"/>
-    <rect x="390" y="160" width="420" height="410" rx="24" fill="#FFFFFF" stroke="#D7DDE8" stroke-width="2" filter="url(#shadow)"/>
-    <text x="600" y="198" font-family="Inter, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif" font-size="22" font-weight="700" fill="#172033" text-anchor="middle">K3 主干计算区</text>
-    <rect x="70" y="265" width="220" height="150" rx="20" fill="#E7F0FF" stroke="#2878FF" stroke-width="2"/>
-    <text x="180" y="303" font-family="Inter, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif" font-size="20" font-weight="700" fill="#2878FF" text-anchor="middle">输入闸机</text>
-    <text x="180" y="337" font-family="Inter, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif" font-size="16" fill="#5B6475" text-anchor="middle"><tspan x="180">文本 / 图片 / 视频</tspan><tspan x="180" dy="25">先编码成统一表示</tspan></text>
-    <line x1="290" y1="340" x2="390" y2="340" stroke="#2878FF" stroke-width="4" marker-end="url(#arrow)"/>
-    <rect x="425" y="230" width="160" height="125" rx="18" fill="#EAE7FF" stroke="#6D5CE7" stroke-width="2"/>
-    <text x="505" y="263" font-family="Inter, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif" font-size="18" font-weight="700" fill="#6D5CE7" text-anchor="middle">KDA 白板室</text>
-    <text x="505" y="292" font-family="Inter, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif" font-size="14" fill="#5B6475" text-anchor="middle"><tspan x="505">固定大小状态</tspan><tspan x="505" dy="22">持续擦写更新</tspan></text>
-    <rect x="615" y="230" width="160" height="125" rx="18" fill="#E7F0FF" stroke="#2878FF" stroke-width="2"/>
-    <text x="695" y="263" font-family="Inter, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif" font-size="17" font-weight="700" fill="#2878FF" text-anchor="middle">Gated MLA 档案室</text>
-    <text x="695" y="292" font-family="Inter, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif" font-size="14" fill="#5B6475" text-anchor="middle"><tspan x="695">保留可寻址条目</tspan><tspan x="695" dy="22">负责精确回查</tspan></text>
-    <rect x="470" y="400" width="260" height="115" rx="18" fill="#E4F7EF" stroke="#1F9D70" stroke-width="2"/>
-    <text x="600" y="435" font-family="Inter, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif" font-size="18" font-weight="700" fill="#1F9D70" text-anchor="middle">Stable LatentMoE 专家工坊</text>
-    <text x="600" y="465" font-family="Inter, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif" font-size="14" fill="#5B6475" text-anchor="middle"><tspan x="600">先压缩到 latent 空间</tspan><tspan x="600" dy="22">再从 896 个专家中激活 16 个</tspan></text>
-    <line x1="505" y1="355" x2="540" y2="400" stroke="#6D5CE7" stroke-width="3" marker-end="url(#arrow-purple)"/>
-    <line x1="695" y1="355" x2="660" y2="400" stroke="#2878FF" stroke-width="3" marker-end="url(#arrow)"/>
-    <rect x="835" y="190" width="290" height="155" rx="20" fill="#FFF2D8" stroke="#E59A18" stroke-width="2"/>
-    <text x="980" y="225" font-family="Inter, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif" font-size="19" font-weight="700" fill="#E59A18" text-anchor="middle">AttnRes 跨层电梯</text>
-    <text x="980" y="257" font-family="Inter, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif" font-size="15" fill="#5B6475" text-anchor="middle"><tspan x="980">当前层可直接读取早期层 / Block</tspan><tspan x="980" dy="24">不是只能接收层层累加后的结果</tspan></text>
-    <line x1="810" y1="285" x2="835" y2="265" stroke="#E59A18" stroke-width="3" marker-end="url(#arrow)"/>
-    <rect x="835" y="375" width="290" height="170" rx="20" fill="#FFFFFF" stroke="#D7DDE8" stroke-width="2"/>
-    <text x="980" y="410" font-family="Inter, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif" font-size="19" font-weight="700" fill="#172033" text-anchor="middle">园区基础设施</text>
-    <rect x="870" y="433" width="220" height="34" rx="17" fill="#EAE7FF"/><text x="980" y="456" font-family="Inter, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif" font-size="14" font-weight="600" fill="#6D5CE7" text-anchor="middle">Quantile Balancing：配额调度</text>
-    <rect x="870" y="475" width="220" height="34" rx="17" fill="#E7F0FF"/><text x="980" y="498" font-family="Inter, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif" font-size="14" font-weight="600" fill="#2878FF" text-anchor="middle">Per-Head Muon：逐 Head 校准</text>
-    <rect x="870" y="517" width="220" height="34" rx="17" fill="#E4F7EF"/><text x="980" y="540" font-family="Inter, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif" font-size="14" font-weight="600" fill="#1F9D70" text-anchor="middle">MXFP4 / MXFP8：低精度演练</text>
-    <rect x="430" y="600" width="340" height="70" rx="18" fill="#FFFFFF" stroke="#D7DDE8" stroke-width="2"/>
-    <text x="600" y="630" font-family="Inter, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif" font-size="18" font-weight="700" fill="#172033" text-anchor="middle">输出：长程推理 / Coding Agent / 多模态任务</text>
-    <text x="600" y="654" font-family="Inter, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif" font-size="14" fill="#5B6475" text-anchor="middle">核心目标：让容量、上下文和深度增长，但单 Token 成本可控</text>
-    <line x1="600" y1="515" x2="600" y2="600" stroke="#1F9D70" stroke-width="4" marker-end="url(#arrow)"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Kimi K3 架构地图</title><desc id="desc">KDA、Gated MLA、LatentMoE、Attention Residuals 与训练基础设施之间的关系。</desc>
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#526078"/></marker><style>text{font-family:Arial,'Microsoft YaHei',sans-serif;fill:#12213a}.t{font-size:46px;font-weight:700}.s{font-size:24px;fill:#5d6b80}.h{font-size:27px;font-weight:700}.b{font-size:23px;fill:#536278}.k{font-size:20px;fill:#66758a}.card{fill:#fff;stroke:#cdd8e6;stroke-width:2}.line{stroke:#526078;stroke-width:4;fill:none;marker-end:url(#a)}</style></defs>
+  <rect width="1600" height="900" rx="30" fill="#f6f8fc"/><text x="80" y="84" class="t">Kimi K3：一张按技术角色组织的架构地图</text><text x="80" y="124" class="s">主路径负责 Token 计算；旁路负责跨深度读取；下方能力保障训练和部署</text><path d="M80 160H1520" stroke="#d6deea" stroke-width="2"/>
+  <rect x="78" y="315" width="210" height="170" rx="18" class="card"/><text x="183" y="372" text-anchor="middle" class="h">输入表示</text><text x="183" y="409" text-anchor="middle" class="b">文本 / 图像 / 视频</text><text x="183" y="438" text-anchor="middle" class="k">统一 Token 表示</text>
+  <rect x="390" y="230" width="570" height="355" rx="24" fill="#fff" stroke="#bfcce0" stroke-width="2"/><text x="430" y="278" class="h">序列计算主干</text>
+  <rect x="430" y="320" width="210" height="150" rx="16" fill="#f0ecff" stroke="#7658e8" stroke-width="3"/><text x="535" y="370" text-anchor="middle" class="h" fill="#6347d4">KDA</text><text x="535" y="405" text-anchor="middle" class="b">固定状态更新</text><text x="535" y="435" text-anchor="middle" class="k">长程低成本记忆</text>
+  <rect x="700" y="320" width="210" height="150" rx="16" fill="#eaf2ff" stroke="#2876f9" stroke-width="3"/><text x="805" y="370" text-anchor="middle" class="h" fill="#1965db">Gated MLA</text><text x="805" y="405" text-anchor="middle" class="b">显式历史条目</text><text x="805" y="435" text-anchor="middle" class="k">精确回查补丁</text>
+  <rect x="560" y="510" width="240" height="48" rx="12" fill="#e6f7f0" stroke="#14956f" stroke-width="2"/><text x="680" y="541" text-anchor="middle" class="b">Stable LatentMoE · 896 选 16</text>
+  <path d="M288 400H380" class="line"/><path d="M535 470L620 510" class="line"/><path d="M805 470L740 510" class="line"/>
+  <rect x="1080" y="250" width="360" height="210" rx="20" fill="#fff7e7" stroke="#e89914" stroke-width="3"/><text x="1120" y="302" class="h" fill="#d58000">Attention Residuals</text><text x="1120" y="340" class="b">当前 Block 对历史 Block 做</text><text x="1120" y="369" class="b">归一化的跨深度读取</text><path d="M960 355H1065" class="line"/>
+  <rect x="390" y="665" width="1050" height="130" rx="18" class="card"/><text x="430" y="710" class="h">训练与运行保障</text>
+  <text x="460" y="754" class="b">Quantile Balancing</text><text x="460" y="779" class="k">容量约束下的路由</text><text x="785" y="754" class="b">Per-Head Muon</text><text x="785" y="779" class="k">按 Head 定义优化粒度</text><text x="1085" y="754" class="b">MXFP4 / MXFP8 QAT</text><text x="1085" y="779" class="k">训练中适应低精度分布</text>
+  <path d="M570 665V588" stroke="#14956f" stroke-width="3" stroke-dasharray="8 8"/><path d="M900 665V588" stroke="#7658e8" stroke-width="3" stroke-dasharray="8 8"/><path d="M1210 665V485" stroke="#2876f9" stroke-width="3" stroke-dasharray="8 8"/>
+  <text x="800" y="846" text-anchor="middle" class="h">输出：长程推理、Coding Agent 与多模态任务</text>
 </svg>
